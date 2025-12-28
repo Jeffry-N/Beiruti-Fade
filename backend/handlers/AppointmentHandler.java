@@ -101,29 +101,57 @@ public class AppointmentHandler implements HttpHandler {
                 sendResponse(exchange, 500, "{\"error\": \"Server error\"}");
             }
         } else if (exchange.getRequestMethod().equalsIgnoreCase("PUT")) {
-            // Update appointment status
+            // Handle reschedule and status update
+            String path = exchange.getRequestURI().getPath();
             InputStream is = exchange.getRequestBody();
             String body = new String(is.readAllBytes(), StandardCharsets.UTF_8);
 
-            int appointmentId = Integer.parseInt(getValue(body, "appointmentId"));
-            String status = getValue(body, "status");
+            if (path.contains("/reschedule")) {
+                // Reschedule appointment - update date and time
+                int appointmentId = Integer.parseInt(getValue(body, "appointmentId"));
+                String appointmentDate = getValue(body, "appointmentDate");
+                String appointmentTime = getValue(body, "appointmentTime");
 
-            try (Connection conn = db.getConnection()) {
-                String sql = "UPDATE appointment SET Status = ? WHERE Id = ?";
-                PreparedStatement pstmt = conn.prepareStatement(sql);
-                pstmt.setString(1, status);
-                pstmt.setInt(2, appointmentId);
+                try (Connection conn = db.getConnection()) {
+                    String sql = "UPDATE appointment SET AppointmentDate = ?, AppointmentTime = ? WHERE Id = ?";
+                    PreparedStatement pstmt = conn.prepareStatement(sql);
+                    pstmt.setString(1, appointmentDate);
+                    pstmt.setString(2, appointmentTime);
+                    pstmt.setInt(3, appointmentId);
 
-                int rowsUpdated = pstmt.executeUpdate();
-                
-                if (rowsUpdated > 0) {
-                    String response = String.format("{\"success\": true, \"message\": \"Appointment status updated to %s\"}", status);
-                    sendResponse(exchange, 200, response);
-                } else {
-                    sendResponse(exchange, 404, "{\"error\": \"Appointment not found\"}");
+                    int rowsUpdated = pstmt.executeUpdate();
+                    
+                    if (rowsUpdated > 0) {
+                        String response = "{\"success\": true, \"message\": \"Appointment rescheduled successfully\"}";
+                        sendResponse(exchange, 200, response);
+                    } else {
+                        sendResponse(exchange, 404, "{\"error\": \"Appointment not found\"}");
+                    }
+                } catch (Exception e) {
+                    sendResponse(exchange, 500, "{\"error\": \"Server error: " + e.getMessage() + "\"}");
                 }
-            } catch (Exception e) {
-                sendResponse(exchange, 500, "{\"error\": \"Server error: " + e.getMessage() + "\"}");
+            } else {
+                // Update appointment status
+                int appointmentId = Integer.parseInt(getValue(body, "appointmentId"));
+                String status = getValue(body, "status");
+
+                try (Connection conn = db.getConnection()) {
+                    String sql = "UPDATE appointment SET Status = ? WHERE Id = ?";
+                    PreparedStatement pstmt = conn.prepareStatement(sql);
+                    pstmt.setString(1, status);
+                    pstmt.setInt(2, appointmentId);
+
+                    int rowsUpdated = pstmt.executeUpdate();
+                    
+                    if (rowsUpdated > 0) {
+                        String response = String.format("{\"success\": true, \"message\": \"Appointment status updated to %s\"}", status);
+                        sendResponse(exchange, 200, response);
+                    } else {
+                        sendResponse(exchange, 404, "{\"error\": \"Appointment not found\"}");
+                    }
+                } catch (Exception e) {
+                    sendResponse(exchange, 500, "{\"error\": \"Server error: " + e.getMessage() + "\"}");
+                }
             }
         } else {
             exchange.sendResponseHeaders(405, -1);
