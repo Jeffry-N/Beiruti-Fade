@@ -14,26 +14,53 @@ public class BarberHandler implements HttpHandler {
 
         if (exchange.getRequestMethod().equalsIgnoreCase("GET")) {
             try (Connection conn = db.getConnection()) {
-                String sql = "SELECT Id, FullName, Bio FROM barber";
-                PreparedStatement pstmt = conn.prepareStatement(sql);
-                ResultSet rs = pstmt.executeQuery();
-
-                StringBuilder jsonArray = new StringBuilder("[");
-                boolean first = true;
-
-                while (rs.next()) {
-                    if (!first) jsonArray.append(",");
-                    jsonArray.append(String.format(
-                        "{\"id\": %d, \"name\": \"%s\", \"bio\": \"%s\"}",
-                        rs.getInt("Id"),
-                        rs.getString("FullName"),
-                        rs.getString("Bio") != null ? rs.getString("Bio") : ""
-                    ));
-                    first = false;
+                String query = exchange.getRequestURI().getQuery();
+                Integer id = null;
+                if (query != null) {
+                    for (String part : query.split("&")) {
+                        String[] kv = part.split("=");
+                        if (kv.length == 2 && kv[0].equals("id")) {
+                            id = Integer.parseInt(kv[1]);
+                        }
+                    }
                 }
-                jsonArray.append("]");
 
-                sendResponse(exchange, 200, jsonArray.toString());
+                if (id != null) {
+                    String sql = "SELECT Id, FullName, Bio, Email FROM barber WHERE Id = ?";
+                    PreparedStatement pstmt = conn.prepareStatement(sql);
+                    pstmt.setInt(1, id);
+                    ResultSet rs = pstmt.executeQuery();
+                    if (rs.next()) {
+                        String response = String.format(
+                            "{\"id\": %d, \"name\": \"%s\", \"bio\": \"%s\", \"email\": \"%s\"}",
+                            rs.getInt("Id"), rs.getString("FullName"), rs.getString("Bio") != null ? rs.getString("Bio") : "", rs.getString("Email") != null ? rs.getString("Email") : ""
+                        );
+                        sendResponse(exchange, 200, response);
+                    } else {
+                        sendResponse(exchange, 404, "{\"error\": \"Barber not found\"}");
+                    }
+                } else {
+                    String sql = "SELECT Id, FullName, Bio FROM barber";
+                    PreparedStatement pstmt = conn.prepareStatement(sql);
+                    ResultSet rs = pstmt.executeQuery();
+
+                    StringBuilder jsonArray = new StringBuilder("[");
+                    boolean first = true;
+
+                    while (rs.next()) {
+                        if (!first) jsonArray.append(",");
+                        jsonArray.append(String.format(
+                            "{\"id\": %d, \"name\": \"%s\", \"bio\": \"%s\"}",
+                            rs.getInt("Id"),
+                            rs.getString("FullName"),
+                            rs.getString("Bio") != null ? rs.getString("Bio") : ""
+                        ));
+                        first = false;
+                    }
+                    jsonArray.append("]");
+
+                    sendResponse(exchange, 200, jsonArray.toString());
+                }
             } catch (Exception e) {
                 sendResponse(exchange, 500, "{\"error\": \"Server error\"}");
             }

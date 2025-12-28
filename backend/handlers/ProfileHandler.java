@@ -32,17 +32,22 @@ public class ProfileHandler implements HttpHandler {
 
             int id = Integer.parseInt(idStr);
             try (Connection conn = db.getConnection()) {
-                String sql = "SELECT Id, FullName, Email, Username FROM " + type + " WHERE Id = ?";
+                String sql = "SELECT Id, FullName, Email, Username" + (type.equals("barber") ? ", Bio" : "") + " FROM " + type + " WHERE Id = ?";
                 PreparedStatement pstmt = conn.prepareStatement(sql);
                 pstmt.setInt(1, id);
 
                 ResultSet rs = pstmt.executeQuery();
                 if (rs.next()) {
-                    String response = String.format(
-                        "{\"id\": %d, \"name\": \"%s\", \"email\": \"%s\", \"username\": \"%s\", \"type\": \"%s\"}",
-                        rs.getInt("Id"), rs.getString("FullName"), rs.getString("Email"), rs.getString("Username"), type
-                    );
-                    sendResponse(exchange, 200, response);
+                    StringBuilder response = new StringBuilder();
+                    response.append("{");
+                    response.append(String.format("\"id\": %d, \"name\": \"%s\", \"email\": \"%s\", \"username\": \"%s\", \"type\": \"%s\"",
+                        rs.getInt("Id"), rs.getString("FullName"), rs.getString("Email"), rs.getString("Username"), type));
+                    if (type.equals("barber")) {
+                        String bio = rs.getString("Bio");
+                        response.append(String.format(", \"bio\": \"%s\"", bio != null ? bio : ""));
+                    }
+                    response.append("}");
+                    sendResponse(exchange, 200, response.toString());
                 } else {
                     sendResponse(exchange, 404, "{\"error\": \"User not found\"}");
                 }
@@ -61,6 +66,7 @@ public class ProfileHandler implements HttpHandler {
             String fullName = getValue(body, "fullName");
             String email = getValue(body, "email");
             String password = getValue(body, "password");
+            String bio = getValue(body, "bio"); // barber only
 
             if (idStr.isEmpty() || type.isEmpty()) {
                 sendResponse(exchange, 400, "{\"error\": \"Missing id or type\"}");
@@ -74,7 +80,8 @@ public class ProfileHandler implements HttpHandler {
                 boolean first = true;
                 if (!fullName.isEmpty()) { sql.append("FullName = ?"); first = false; }
                 if (!email.isEmpty()) { sql.append(first ? "Email = ?" : ", Email = ?"); first = false; }
-                if (!password.isEmpty()) { sql.append(first ? "Password = ?" : ", Password = ?"); }
+                if (!password.isEmpty() && !password.equals("undefined")) { sql.append(first ? "Password = ?" : ", Password = ?"); first = false; }
+                if (type.equals("barber") && !bio.isEmpty()) { sql.append(first ? "Bio = ?" : ", Bio = ?"); }
                 sql.append(" WHERE Id = ?");
 
                 // If nothing to update
@@ -87,7 +94,8 @@ public class ProfileHandler implements HttpHandler {
                 int idx = 1;
                 if (!fullName.isEmpty()) { pstmt.setString(idx++, fullName); }
                 if (!email.isEmpty()) { pstmt.setString(idx++, email); }
-                if (!password.isEmpty()) { pstmt.setString(idx++, password); }
+                if (!password.isEmpty() && !password.equals("undefined")) { pstmt.setString(idx++, password); }
+                if (type.equals("barber") && !bio.isEmpty()) { pstmt.setString(idx++, bio); }
                 pstmt.setInt(idx, id);
 
                 int updated = pstmt.executeUpdate();

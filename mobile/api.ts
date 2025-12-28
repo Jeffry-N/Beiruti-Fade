@@ -20,12 +20,14 @@ export const apiCall = async <T>(
     };
 
     if (body && (method === 'POST' || method === 'PUT')) {
-      options.body = new URLSearchParams(
-        Object.entries(body).reduce((acc, [key, value]) => {
+      const filtered = Object.entries(body).reduce((acc, [key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
           acc[key] = String(value);
-          return acc;
-        }, {} as Record<string, string>)
-      ).toString();
+        }
+        return acc;
+      }, {} as Record<string, string>);
+
+      options.body = new URLSearchParams(filtered).toString();
     }
 
     const response = await fetch(url, options);
@@ -53,6 +55,7 @@ export const signup = (fullName: string, username: string, email: string, passwo
 export const getServices = () => apiCall('/services', 'GET');
 
 export const getBarbers = () => apiCall('/barbers', 'GET');
+export const getBarber = (id: number) => apiCall(`/barbers?id=${id}`, 'GET');
 
 export const bookAppointment = (customerId: number, barberId: number, serviceId: number, appointmentDate: string, appointmentTime: string) =>
   apiCall('/appointment', 'POST', { customerId, barberId, serviceId, appointmentDate, appointmentTime });
@@ -72,7 +75,7 @@ export const updateAppointmentStatus = (appointmentId: number, status: 'confirme
 export const updateProfile = (
   id: number,
   type: 'customer' | 'barber',
-  updates: { fullName?: string; email?: string; password?: string }
+  updates: { fullName?: string; email?: string; password?: string; bio?: string }
 ) => apiCall('/profile', 'PUT', { id, type, ...updates });
 
 export const getProfile = (id: number, type: 'customer' | 'barber') =>

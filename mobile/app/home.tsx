@@ -91,8 +91,9 @@ export default function HomeScreen() {
       <View style={styles.header}>
         <View>
           <Text style={[styles.greeting, { color: '#00A651' }]}>Welcome back</Text>
+          <Text style={[styles.userName, { color: theme.text }]}>{user?.name || 'User'}</Text>
           <TouchableOpacity onPress={() => router.push('/profile-edit' as any)}>
-            <Text style={[styles.userName, { color: theme.text }]}>{user?.name || 'User'}</Text>
+            <Text style={styles.editLink}>✎ Edit Profile</Text>
           </TouchableOpacity>
           <Text style={[styles.balance, { color: '#ED1C24' }]}>$100.00</Text>
           <Text style={[styles.balanceLabel, { color: theme.subtext }]}>TOP UP</Text>
@@ -163,7 +164,7 @@ export default function HomeScreen() {
       <View style={styles.barbersSection}>
         <Text style={[styles.sectionTitle, { color: theme.text }]}>Our Barbers</Text>
         {barbers.map((barber) => (
-          <View key={barber.id} style={[styles.barberCard, { backgroundColor: theme.cardBg, borderColor: theme.cardBorder }]}>
+          <TouchableOpacity key={barber.id} style={[styles.barberCard, { backgroundColor: theme.cardBg, borderColor: theme.cardBorder }]} onPress={() => router.push({ pathname: '/barber-detail', params: { id: String(barber.id) } } as any)}>
             <View style={styles.barberAvatar}>
               <Text style={styles.avatarText}>{barber.name.charAt(0)}</Text>
             </View>
@@ -171,7 +172,7 @@ export default function HomeScreen() {
               <Text style={[styles.barberName, { color: theme.text }]}>{barber.name}</Text>
               <Text style={[styles.barberBio, { color: theme.subtext }]}>{barber.bio}</Text>
             </View>
-          </View>
+          </TouchableOpacity>
         ))}
       </View>
       
@@ -255,6 +256,12 @@ const styles = StyleSheet.create({
     color: '#1A1A1A',
     fontSize: 24,
     fontWeight: 'bold',
+    marginTop: 4,
+  },
+  editLink: {
+    color: '#00A651',
+    fontSize: 12,
+    fontWeight: '600',
     marginTop: 4,
   },
   balance: {

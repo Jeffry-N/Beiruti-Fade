@@ -145,8 +145,9 @@ export default function BarberHomeScreen() {
       <View style={styles.header}>
         <View>
           <Text style={[styles.greeting, { color: '#00A651' }]}>Welcome back</Text>
+          <Text style={[styles.userName, { color: theme.text }]}>{user?.name || 'Barber'}</Text>
           <TouchableOpacity onPress={() => router.push('/profile-edit' as any)}>
-            <Text style={[styles.userName, { color: theme.text }]}>{user?.name || 'Barber'}</Text>
+            <Text style={styles.editLink}>✎ Edit Profile</Text>
           </TouchableOpacity>
         </View>
         <TouchableOpacity 
@@ -299,6 +300,12 @@ const styles = StyleSheet.create({
     color: '#1A1A1A',
     fontSize: 24,
     fontWeight: 'bold',
+    marginTop: 4,
+  },
+  editLink: {
+    color: '#00A651',
+    fontSize: 12,
+    fontWeight: '600',
     marginTop: 4,
   },
   logoutButtonHeader: {
