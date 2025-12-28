@@ -68,21 +68,3 @@ CREATE TABLE product_order (
     CONSTRAINT fk_order_customer FOREIGN KEY (CustomerId) REFERENCES customer(Id),
     CONSTRAINT fk_order_product FOREIGN KEY (ProductId) REFERENCES product(Id)
 );
-
--- Insert Default Services
-INSERT INTO service (Name, Description, Price) VALUES
-('HAIRCUT', 'Classic professional haircut with styling', 25.00),
-('SHAVING', 'Premium shaving service with beard treatment', 20.00),
-('TREATMENT', 'Hair treatment and conditioning service', 35.00),
-('BEARD CARE', 'Beard trimming and grooming service', 18.00),
-('HAIR STYLE', 'Advanced hair styling and design', 30.00);
-
--- Insert Sample Barbers
-INSERT INTO barber (FullName, Username, Email, Password, Bio) VALUES
-('Steve Johnson', 'steve', 'steve@beirutifade.com', 'password123', 'Expert barber with 10 years experience'),
-('Mike Davis', 'mike', 'mike@beirutifade.com', 'password123', 'Specialist in modern cuts and designs'),
-('Alex Martinez', 'alex', 'alex@beirutifade.com', 'password123', 'Master of traditional and contemporary styles');
-
--- Insert Sample Customer
-INSERT INTO customer (FullName, Username, Email, Password) VALUES
-('John Doe', 'john', 'john@example.com', 'password123');
