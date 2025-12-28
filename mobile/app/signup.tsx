@@ -1,10 +1,22 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, useColorScheme } from 'react-native';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { signup } from '../api';
+import ThemeModal from '../components/ThemeModal';
+import { useThemeAlert } from '../hooks/useThemeAlert';
 
 export default function SignupScreen() {
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
+  const theme = {
+    bg: isDark ? '#1A1A1A' : '#FFFFFF',
+    text: isDark ? '#FFFFFF' : '#1A1A1A',
+    input: isDark ? '#2A2A2A' : '#F5F5F5',
+    inputBorder: isDark ? '#3A3A3A' : '#E0E0E0',
+    placeholder: isDark ? '#888' : '#666',
+  };
+  
   const router = useRouter();
   
   const [fullName, setFullName] = useState('');
@@ -13,10 +25,11 @@ export default function SignupScreen() {
   const [password, setPassword] = useState('');
   const isBarber = false; // Only customers can sign up
   const [isLoading, setIsLoading] = useState(false);
+  const { visible, config, hide, alert } = useThemeAlert();
 
   const handleSignup = async () => {
     if (!fullName.trim() || !username.trim() || !email.trim() || !password.trim()) {
-      Alert.alert('Error', 'Please fill in all fields');
+      alert('Error', 'Please fill in all fields');
       return;
     }
 
@@ -27,23 +40,30 @@ export default function SignupScreen() {
     setIsLoading(false);
 
     if (result.success) {
-      Alert.alert('Success', 'Account created! Please log in.', [
+        alert('Success', 'Account created! Please log in.', [
         {
           text: 'OK',
           onPress: () => router.replace('/'),
         },
       ]);
     } else {
-      Alert.alert('Error', result.error || 'Signup failed');
+        alert('Error', result.error || 'Signup failed');
     }
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>JOIN THE FAMILY</Text>
-        <Text style={styles.subtitle}>Create an account for Beiruti Fade</Text>
+    <>
+    <View style={[styles.container, { backgroundColor: theme.bg }]}>
+      {/* Logo */}
+      <View style={styles.logoContainer}>
+        <View style={styles.logoIconBox}>
+          <Text style={styles.logoIcon}>💈</Text>
+        </View>
+        <Text style={styles.logoText}>BEIRUTI</Text>
+        <Text style={styles.logoTextSecondary}>FADE</Text>
       </View>
+
+      <Text style={styles.signupTitle}>Create Your Account</Text>
 
       <View style={styles.form}>
         <TextInput 
@@ -103,15 +123,66 @@ export default function SignupScreen() {
         </Text>
       </TouchableOpacity>
     </View>
+
+    <ThemeModal
+      visible={visible}
+      title={config.title}
+      message={config.message}
+      buttons={config.buttons}
+      onDismiss={hide}
+    />
+    </>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFFFFF',
     padding: 30,
     justifyContent: 'center',
+  },
+  logoContainer: { 
+    alignItems: 'center', 
+    marginBottom: 30 
+  },
+  logoIconBox: {
+    width: 70,
+    height: 70,
+    backgroundColor: '#ED1C24',
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
+    shadowColor: '#ED1C24',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 8,
+  },
+  logoIcon: {
+    fontSize: 35,
+  },
+  logoText: { 
+    color: '#ED1C24', 
+    fontSize: 30, 
+    fontWeight: '900', 
+    letterSpacing: 2,
+    textAlign: 'center' 
+  },
+  logoTextSecondary: { 
+    color: '#00A651', 
+    fontSize: 26, 
+    fontWeight: '700', 
+    letterSpacing: 4,
+    textAlign: 'center',
+    marginTop: -5,
+  },
+  signupTitle: {
+    color: '#1A1A1A',
+    fontSize: 20,
+    fontWeight: '600',
+    textAlign: 'center',
+    marginBottom: 25,
   },
   header: {
     marginBottom: 40,

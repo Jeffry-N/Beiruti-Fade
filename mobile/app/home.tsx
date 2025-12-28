@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert, ActivityIndicator, Image } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator, Image, useColorScheme } from 'react-native';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getServices, getBarbers } from '../api';
+import ThemeModal from '../components/ThemeModal';
+import { useThemeAlert } from '../hooks/useThemeAlert';
 
 interface Service {
   id: number;
@@ -18,6 +20,16 @@ interface Barber {
 }
 
 export default function HomeScreen() {
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
+  const theme = {
+    bg: isDark ? '#1A1A1A' : '#FFFFFF',
+    text: isDark ? '#FFFFFF' : '#1A1A1A',
+    cardBg: isDark ? '#2A2A2A' : '#F5F5F5',
+    cardBorder: isDark ? '#3A3A3A' : '#E0E0E0',
+    subtext: isDark ? '#AAA' : '#666',
+  };
+  
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
   const [services, setServices] = useState<Service[]>([]);
@@ -25,6 +37,7 @@ export default function HomeScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'services' | 'barbers' | 'promo'>('services');
 
+    const { visible, config, hide, alert } = useThemeAlert();
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -43,7 +56,7 @@ export default function HomeScreen() {
           setBarbers(barbersResult.data as Barber[]);
         }
       } catch (error) {
-        Alert.alert('Error', 'Failed to load data');
+          alert('Error', 'Failed to load data');
       } finally {
         setIsLoading(false);
       }
@@ -72,42 +85,43 @@ export default function HomeScreen() {
   }
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+    <>
+    <ScrollView style={[styles.container, { backgroundColor: theme.bg }]} showsVerticalScrollIndicator={false}>
       {/* Header */}
       <View style={styles.header}>
         <View>
-          <Text style={styles.greeting}>Welcome</Text>
-          <Text style={styles.userName}>{user?.name || 'User'}</Text>
-          <Text style={styles.balance}>$100.00</Text>
-          <Text style={styles.balanceLabel}>TOP UP</Text>
+          <Text style={[styles.greeting, { color: '#00A651' }]}>Welcome</Text>
+          <Text style={[styles.userName, { color: theme.text }]}>{user?.name || 'User'}</Text>
+          <Text style={[styles.balance, { color: '#ED1C24' }]}>$100.00</Text>
+          <Text style={[styles.balanceLabel, { color: theme.subtext }]}>TOP UP</Text>
         </View>
         <TouchableOpacity 
-          style={styles.menuButton}
-          onPress={() => {}}
+          style={styles.logoutButtonHeader}
+          onPress={handleLogout}
         >
-          <Text style={styles.menuDots}>⋮</Text>
+          <Text style={styles.logoutTextHeader}>Logout</Text>
         </TouchableOpacity>
       </View>
 
       {/* Tabs */}
       <View style={styles.tabsContainer}>
         <TouchableOpacity 
-          style={activeTab === 'services' ? styles.tabActive : styles.tab}
+          style={[activeTab === 'services' ? styles.tabActive : styles.tab, { backgroundColor: activeTab === 'services' ? '#ED1C24' : theme.cardBg }]}
           onPress={() => setActiveTab('services')}
         >
-          <Text style={activeTab === 'services' ? styles.tabTextActive : styles.tabText}>SERVICES</Text>
+          <Text style={[activeTab === 'services' ? styles.tabTextActive : styles.tabText, { color: activeTab === 'services' ? '#FFFFFF' : theme.text }]}>SERVICES</Text>
         </TouchableOpacity>
         <TouchableOpacity 
-          style={activeTab === 'barbers' ? styles.tabActive : styles.tab}
+          style={[activeTab === 'barbers' ? styles.tabActive : styles.tab, { backgroundColor: activeTab === 'barbers' ? '#ED1C24' : theme.cardBg }]}
           onPress={() => setActiveTab('barbers')}
         >
-          <Text style={activeTab === 'barbers' ? styles.tabTextActive : styles.tabText}>BARBERS</Text>
+          <Text style={[activeTab === 'barbers' ? styles.tabTextActive : styles.tabText, { color: activeTab === 'barbers' ? '#FFFFFF' : theme.text }]}>BARBERS</Text>
         </TouchableOpacity>
         <TouchableOpacity 
-          style={activeTab === 'promo' ? styles.tabActive : styles.tab}
+          style={[activeTab === 'promo' ? styles.tabActive : styles.tab, { backgroundColor: activeTab === 'promo' ? '#ED1C24' : theme.cardBg }]}
           onPress={() => setActiveTab('promo')}
         >
-          <Text style={activeTab === 'promo' ? styles.tabTextActive : styles.tabText}>PROMO</Text>
+          <Text style={[activeTab === 'promo' ? styles.tabTextActive : styles.tabText, { color: activeTab === 'promo' ? '#FFFFFF' : theme.text }]}>PROMO</Text>
         </TouchableOpacity>
       </View>
 
@@ -115,69 +129,85 @@ export default function HomeScreen() {
       {activeTab === 'services' && (
       <>
       <View style={styles.servicesContainer}>
-        {services.map((service) => (
-          <TouchableOpacity 
-            key={service.id} 
-            style={styles.serviceCard}
-          >
-            <View style={styles.serviceIcon}>
-              <Text style={styles.iconText}>✂️</Text>
-            </View>
-            <View style={styles.serviceInfo}>
-              <Text style={styles.serviceName}>{service.name}</Text>
-              <Text style={styles.serviceDesc}>{service.description}</Text>
-            </View>
-            <TouchableOpacity 
-              style={styles.addButton}
-              onPress={handleBooking}
+        <View style={styles.servicesGrid}>
+          {services.map((service) => (
+            <View 
+              key={service.id} 
+              style={[styles.serviceCard, { backgroundColor: theme.cardBg, borderColor: theme.cardBorder }]}
             >
-              <Text style={styles.plusSign}>+</Text>
-            </TouchableOpacity>
-          </TouchableOpacity>
-        ))}
+              <View style={styles.serviceIcon}>
+                <Text style={styles.iconText}>✂️</Text>
+              </View>
+              <Text style={[styles.serviceName, { color: theme.text }]}>{service.name}</Text>
+              <Text style={[styles.servicePrice, { color: '#ED1C24' }]}>${service.price}</Text>
+            </View>
+          ))}
+        </View>
       </View>
 
-      {/* Load More */}
-      <View style={styles.loadMoreContainer}>
-        <Text style={styles.loadMore}>LOAD MORE</Text>
-        <Text style={{color: '#00A651', marginLeft: 5}}>→</Text>
-      </View>
+      {/* Book Appointment Button */}
+      <TouchableOpacity 
+        style={styles.bookButton}
+        onPress={handleBooking}
+      >
+        <Text style={styles.bookButtonText}>Book Appointment</Text>
+      </TouchableOpacity>
       </>
       )}
 
       {/* Barbers Tab */}
       {activeTab === 'barbers' && (
+      <>
       <View style={styles.barbersSection}>
-        <Text style={styles.sectionTitle}>Our Barbers</Text>
+        <Text style={[styles.sectionTitle, { color: theme.text }]}>Our Barbers</Text>
         {barbers.map((barber) => (
-          <View key={barber.id} style={styles.barberCard}>
+          <View key={barber.id} style={[styles.barberCard, { backgroundColor: theme.cardBg, borderColor: theme.cardBorder }]}>
             <View style={styles.barberAvatar}>
               <Text style={styles.avatarText}>{barber.name.charAt(0)}</Text>
             </View>
             <View style={styles.barberInfo}>
-              <Text style={styles.barberName}>{barber.name}</Text>
-              <Text style={styles.barberBio}>{barber.bio}</Text>
+              <Text style={[styles.barberName, { color: theme.text }]}>{barber.name}</Text>
+              <Text style={[styles.barberBio, { color: theme.subtext }]}>{barber.bio}</Text>
             </View>
           </View>
         ))}
       </View>
+      
+      {/* Book Appointment Button */}
+      <TouchableOpacity 
+        style={styles.bookButton}
+        onPress={handleBooking}
+      >
+        <Text style={styles.bookButtonText}>Book Appointment</Text>
+      </TouchableOpacity>
+      </>
       )}
 
       {/* Promo Tab */}
       {activeTab === 'promo' && (
+      <>
       <View style={styles.barbersSection}>
-        <Text style={styles.sectionTitle}>Special Offers</Text>
-        <View style={{padding: 20, backgroundColor: '#F5F5F5', borderRadius: 12, marginBottom: 12, borderWidth: 1, borderColor: '#E0E0E0'}}>
+        <Text style={[styles.sectionTitle, { color: theme.text }]}>Special Offers</Text>
+        <View style={{padding: 20, backgroundColor: theme.cardBg, borderRadius: 12, marginBottom: 12, borderWidth: 1, borderColor: theme.cardBorder}}>
           <Text style={{color: '#ED1C24', fontSize: 18, fontWeight: 'bold', marginBottom: 8}}>🎉 New Customer Special</Text>
-          <Text style={{color: '#1A1A1A', fontSize: 14, marginBottom: 8}}>Get 20% off your first appointment!</Text>
-          <Text style={{color: '#666', fontSize: 12}}>Use code: WELCOME20</Text>
+          <Text style={{color: theme.text, fontSize: 14, marginBottom: 8}}>Get 20% off your first appointment!</Text>
+          <Text style={{color: theme.subtext, fontSize: 12}}>Use code: WELCOME20</Text>
         </View>
-        <View style={{padding: 20, backgroundColor: '#F5F5F5', borderRadius: 12, marginBottom: 12, borderWidth: 1, borderColor: '#E0E0E0'}}>
+        <View style={{padding: 20, backgroundColor: theme.cardBg, borderRadius: 12, marginBottom: 12, borderWidth: 1, borderColor: theme.cardBorder}}>
           <Text style={{color: '#00A651', fontSize: 18, fontWeight: 'bold', marginBottom: 8}}>💈 Weekend Special</Text>
-          <Text style={{color: '#1A1A1A', fontSize: 14, marginBottom: 8}}>Book 3 services, get the 4th free!</Text>
-          <Text style={{color: '#666', fontSize: 12}}>Valid Saturday & Sunday</Text>
+          <Text style={{color: theme.text, fontSize: 14, marginBottom: 8}}>Book 3 services, get the 4th free!</Text>
+          <Text style={{color: theme.subtext, fontSize: 12}}>Valid Saturday & Sunday</Text>
         </View>
       </View>
+      
+      {/* Book Appointment Button */}
+      <TouchableOpacity 
+        style={styles.bookButton}
+        onPress={handleBooking}
+      >
+        <Text style={styles.bookButtonText}>Book Appointment</Text>
+      </TouchableOpacity>
+      </>
       )}
 
       {/* My Appointments Button */}
@@ -188,19 +218,19 @@ export default function HomeScreen() {
         <Text style={styles.appointmentsButtonText}>My Appointments</Text>
       </TouchableOpacity>
 
-      {/* Logout */}
-      <TouchableOpacity 
-        style={styles.logoutButton}
-        onPress={handleLogout}
-      >
-        <Text style={styles.logoutText}>Logout</Text>
-      </TouchableOpacity>
-
       <View style={{ height: 20 }} />
     </ScrollView>
+
+    <ThemeModal
+      visible={visible}
+      title={config.title}
+      message={config.message}
+      buttons={config.buttons}
+      onDismiss={hide}
+    />
+    </>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -236,6 +266,17 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '600',
     marginTop: 4,
+  },
+  logoutButtonHeader: {
+    backgroundColor: '#ED1C24',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 6,
+  },
+  logoutTextHeader: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+    fontSize: 12,
   },
   menuButton: {
     padding: 8,
@@ -275,15 +316,20 @@ const styles = StyleSheet.create({
   servicesContainer: {
     marginBottom: 20,
   },
-  serviceCard: {
+  servicesGrid: {
     flexDirection: 'row',
-    alignItems: 'center',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  serviceCard: {
+    width: '48%',
     backgroundColor: '#F5F5F5',
     borderRadius: 12,
-    padding: 12,
+    padding: 16,
     marginBottom: 12,
     borderWidth: 1,
     borderColor: '#E0E0E0',
+    alignItems: 'center',
   },
   serviceIcon: {
     width: 48,
@@ -292,7 +338,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#00A651',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginBottom: 12,
   },
   iconText: {
     fontSize: 24,
@@ -303,7 +349,15 @@ const styles = StyleSheet.create({
   serviceName: {
     color: '#1A1A1A',
     fontWeight: 'bold',
-    fontSize: 14,
+    fontSize: 13,
+    textAlign: 'center',
+    marginBottom: 4,
+  },
+  servicePrice: {
+    color: '#ED1C24',
+    fontSize: 12,
+    fontWeight: '600',
+    textAlign: 'center',
   },
   serviceDesc: {
     color: '#666',
@@ -322,6 +376,23 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontWeight: 'bold',
     fontSize: 16,
+  },
+  bookButton: {
+    backgroundColor: '#00A651',
+    paddingVertical: 14,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginBottom: 30,
+    shadowColor: '#00A651',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  bookButtonText: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+    fontSize: 14,
   },
   loadMoreContainer: {
     flexDirection: 'row',

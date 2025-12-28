@@ -1,6 +1,7 @@
 import { Stack } from "expo-router";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, View } from "react-native";
+import { ActivityIndicator, View, useColorScheme } from "react-native";
+import { StatusBar } from "expo-status-bar";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface User {
@@ -10,6 +11,11 @@ interface User {
 }
 
 export default function RootLayout() {
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
+  const bgColor = isDark ? '#1A1A1A' : '#FFFFFF';
+  const textColor = isDark ? '#FFFFFF' : '#1A1A1A';
+  
   const [isLoading, setIsLoading] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userType, setUserType] = useState<'customer' | 'barber' | null>(null);
@@ -37,14 +43,17 @@ export default function RootLayout() {
 
   if (isLoading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#FFFFFF' }}>
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: bgColor }}>
+        <StatusBar backgroundColor={bgColor} />
         <ActivityIndicator size="large" color="#ED1C24" />
       </View>
     );
   }
 
   return (
-    <Stack
+    <>
+      <StatusBar backgroundColor={bgColor} />
+      <Stack
       screenOptions={{
         headerShown: false,
       }}
@@ -72,5 +81,6 @@ export default function RootLayout() {
         </>
       )}
     </Stack>
+    </>
   );
 }

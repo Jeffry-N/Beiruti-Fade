@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator, useColorScheme } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getAppointments } from '../api';
+import ThemeModal from '../components/ThemeModal';
+import { useThemeAlert } from '../hooks/useThemeAlert';
 
 interface Appointment {
   id: number;
@@ -15,10 +17,21 @@ interface Appointment {
 }
 
 export default function AppointmentsScreen() {
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
+  const theme = {
+    bg: isDark ? '#1A1A1A' : '#FFFFFF',
+    text: isDark ? '#FFFFFF' : '#1A1A1A',
+    cardBg: isDark ? '#2A2A2A' : '#F5F5F5',
+    cardBorder: isDark ? '#3A3A3A' : '#E0E0E0',
+    subtext: isDark ? '#AAA' : '#666',
+  };
+  
   const router = useRouter();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
+    const { visible, config, hide, alert } = useThemeAlert();
 
   const loadAppointments = async () => {
     try {
@@ -59,6 +72,7 @@ export default function AppointmentsScreen() {
       setIsLoading(false);
     } catch (error) {
       console.error('Error loading appointments:', error);
+      alert('Error', 'Failed to load appointments');
       setIsLoading(false);
     }
   };
@@ -96,20 +110,20 @@ export default function AppointmentsScreen() {
 
   if (isLoading) {
     return (
-      <View style={styles.container}>
+      <View style={[styles.container, { backgroundColor: theme.bg }]}>
         <ActivityIndicator size="large" color="#ED1C24" />
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.bg }]}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { borderBottomColor: theme.cardBorder }]}>
         <TouchableOpacity onPress={() => router.back()}>
           <Text style={styles.backText}>← Back</Text>
         </TouchableOpacity>
-        <Text style={styles.title}>My Appointments</Text>
+        <Text style={[styles.title, { color: theme.text }]}>My Appointments</Text>
         <View style={{ width: 40 }} />
       </View>
 
@@ -117,7 +131,7 @@ export default function AppointmentsScreen() {
       <ScrollView showsVerticalScrollIndicator={false} style={styles.listContainer}>
         {appointments.length === 0 ? (
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>No appointments yet</Text>
+            <Text style={[styles.emptyText, { color: theme.subtext }]}>No appointments yet</Text>
             <TouchableOpacity 
               style={styles.bookButton}
               onPress={() => router.push('/booking' as any)}
@@ -127,7 +141,7 @@ export default function AppointmentsScreen() {
           </View>
         ) : (
           appointments.map((appointment) => (
-            <View key={appointment.id} style={styles.appointmentCard}>
+            <View key={appointment.id} style={[styles.appointmentCard, { backgroundColor: theme.cardBg, borderColor: theme.cardBorder }]}>
               <View style={styles.appointmentHeader}>
                 <Text style={styles.barberName}>{appointment.barberName}</Text>
                 <View style={[styles.statusBadge, { backgroundColor: getStatusColor(appointment.status) }]}>
@@ -142,13 +156,13 @@ export default function AppointmentsScreen() {
 
               <View style={styles.appointmentDetails}>
                 <View style={styles.detailItem}>
-                  <Text style={styles.detailLabel}>Service</Text>
-                  <Text style={styles.detailValue}>{appointment.serviceName}</Text>
+                  <Text style={[styles.detailLabel, { color: theme.subtext }]}>Service</Text>
+                  <Text style={[styles.detailValue, { color: theme.text }]}>{appointment.serviceName}</Text>
                 </View>
 
                 <View style={styles.detailItem}>
-                  <Text style={styles.detailLabel}>Date & Time</Text>
-                  <Text style={styles.detailValue}>
+                  <Text style={[styles.detailLabel, { color: theme.subtext }]}>Date & Time</Text>
+                  <Text style={[styles.detailValue, { color: theme.text }]}>
                     {formatDate(appointment.date)} at {appointment.time}
                   </Text>
                 </View>
@@ -180,37 +194,33 @@ export default function AppointmentsScreen() {
                 <TouchableOpacity 
                   style={[styles.actionButton, styles.cancelButton]}
                   onPress={() => {
-                    Alert.alert(
-                      'Cancel Appointment',
-                      'Are you sure you want to cancel this appointment?',
-                      [
-                        { text: 'No', style: 'cancel' },
-                        {
-                          text: 'Yes, Cancel',
-                          style: 'destructive',
-                          onPress: async () => {
-                            try {
-                              const { updateAppointmentStatus } = require('../api');
-                              
-                              // Cancel all appointments in the group (all services)
-                              const appointmentsToCancel = appointment.allAppointments || [appointment];
-                              
-                              for (const apt of appointmentsToCancel) {
-                                const result = await updateAppointmentStatus(apt.id, 'cancelled');
-                                if (!result.success) {
-                                  throw new Error(result.error || 'Failed to cancel appointment');
-                                }
+                    alert('Cancel Appointment', 'Are you sure you want to cancel this appointment?', [
+                      { text: 'No', style: 'cancel', onPress: () => {} },
+                      {
+                        text: 'Yes, Cancel',
+                        style: 'destructive',
+                        onPress: async () => {
+                          try {
+                            const { updateAppointmentStatus } = require('../api');
+                            
+                            // Cancel all appointments in the group (all services)
+                            const appointmentsToCancel = appointment.allAppointments || [appointment];
+                            
+                            for (const apt of appointmentsToCancel) {
+                              const result = await updateAppointmentStatus(apt.id, 'cancelled');
+                              if (!result.success) {
+                                throw new Error(result.error || 'Failed to cancel appointment');
                               }
-                              
-                              Alert.alert('Success', 'Appointment cancelled');
-                              loadAppointments();
-                            } catch (error: any) {
-                              Alert.alert('Error', error.message || 'Network error. Please try again.');
                             }
-                          },
+                            
+                            alert('Success', 'Appointment cancelled');
+                            loadAppointments();
+                          } catch (error: any) {
+                            alert('Error', error.message || 'Network error. Please try again.');
+                          }
                         },
-                      ]
-                    );
+                      },
+                    ]);
                   }}
                 >
                   <Text style={styles.cancelButtonText}>Cancel</Text>
@@ -221,6 +231,14 @@ export default function AppointmentsScreen() {
         )}
         <View style={{ height: 20 }} />
       </ScrollView>
+
+      <ThemeModal
+        visible={visible}
+        title={config.title}
+        message={config.message}
+        buttons={config.buttons}
+        onDismiss={hide}
+      />
     </View>
   );
 }
@@ -228,7 +246,6 @@ export default function AppointmentsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
   },
   header: {
     flexDirection: 'row',
@@ -236,6 +253,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 16,
     paddingTop: 20,
+    borderBottomWidth: 1,
   },
   backText: {
     color: '#00A651',
@@ -243,7 +261,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   title: {
-    color: '#1A1A1A',
     fontSize: 18,
     fontWeight: 'bold',
   },
@@ -258,7 +275,6 @@ const styles = StyleSheet.create({
     paddingVertical: 60,
   },
   emptyText: {
-    color: '#666',
     fontSize: 16,
     marginBottom: 20,
   },
@@ -279,12 +295,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   appointmentCard: {
-    backgroundColor: '#F5F5F5',
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
   },
   appointmentHeader: {
     flexDirection: 'row',
@@ -313,13 +327,11 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   detailLabel: {
-    color: '#666',
     fontSize: 11,
     fontWeight: '600',
     marginBottom: 4,
   },
   detailValue: {
-    color: '#1A1A1A',
     fontSize: 13,
     fontWeight: '500',
   },

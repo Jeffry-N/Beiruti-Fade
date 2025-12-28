@@ -1,13 +1,26 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, useColorScheme } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { bookAppointment, updateAppointmentDate } from '../api';
+import ThemeModal from '../components/ThemeModal';
+import { useThemeAlert } from '../hooks/useThemeAlert';
 
 export default function ConfirmationScreen() {
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
+  const theme = {
+    bg: isDark ? '#1A1A1A' : '#FFFFFF',
+    text: isDark ? '#FFFFFF' : '#1A1A1A',
+    cardBg: isDark ? '#2A2A2A' : '#F5F5F5',
+    cardBorder: isDark ? '#3A3A3A' : '#E0E0E0',
+    subtext: isDark ? '#AAA' : '#666',
+  };
+  
   const router = useRouter();
   const { serviceIds, barberId, date, time, serviceName, barberName, totalPrice, appointmentIds, reschedule } = useLocalSearchParams();
   const [isLoading, setIsLoading] = useState(false);
+  const { visible, config, hide, alert } = useThemeAlert();
   const [user, setUser] = useState<any>(null);
 
   React.useEffect(() => {
@@ -22,7 +35,7 @@ export default function ConfirmationScreen() {
 
   const handleConfirm = async () => {
     if (!user) {
-      Alert.alert('Error', 'User data not found');
+      alert('Error', 'User data not found');
       return;
     }
 
@@ -47,7 +60,7 @@ export default function ConfirmationScreen() {
         }
         
         setIsLoading(false);
-        Alert.alert('Success', 'Appointment rescheduled successfully!', [
+        alert('Success', 'Appointment rescheduled successfully!', [
           {
             text: 'OK',
             onPress: () => router.replace('/appointments' as any),
@@ -73,7 +86,7 @@ export default function ConfirmationScreen() {
         }
         
         setIsLoading(false);
-        Alert.alert('Success', `${serviceIdArray.length} appointment${serviceIdArray.length > 1 ? 's' : ''} booked successfully!`, [
+        alert('Success', `${serviceIdArray.length} appointment${serviceIdArray.length > 1 ? 's' : ''} booked successfully!`, [
           {
             text: 'OK',
             onPress: () => router.replace('/home' as any),
@@ -82,7 +95,7 @@ export default function ConfirmationScreen() {
       }
     } catch (error: any) {
       setIsLoading(false);
-      Alert.alert('Error', error.message || 'Failed to process appointment');
+      alert('Error', error.message || 'Failed to process appointment');
     }
   };
 
@@ -102,49 +115,50 @@ export default function ConfirmationScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <>
+    <View style={[styles.container, { backgroundColor: theme.bg }]}>
       {/* Header */}
       <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-        <Text style={styles.backText}>← Back</Text>
+        <Text style={[styles.backText, { color: '#00A651' }]}>← Back</Text>
       </TouchableOpacity>
 
       {/* Confirmation Card */}
-      <View style={styles.card}>
-        <Text style={styles.title}>Booking Confirmation</Text>
+      <View style={[styles.card, { backgroundColor: theme.cardBg }]}>
+        <Text style={[styles.title, { color: theme.text }]}>Booking Confirmation</Text>
 
         <View style={styles.detailsContainer}>
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Service</Text>
-            <Text style={styles.detailValue}>{serviceName}</Text>
+            <Text style={[styles.detailLabel, { color: theme.subtext }]}>Service</Text>
+            <Text style={[styles.detailValue, { color: theme.text }]}>{serviceName}</Text>
           </View>
 
-          <View style={styles.divider} />
+          <View style={[styles.divider, { backgroundColor: theme.cardBorder }]} />
 
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Barber</Text>
-            <Text style={styles.detailValue}>{barberName}</Text>
+            <Text style={[styles.detailLabel, { color: theme.subtext }]}>Barber</Text>
+            <Text style={[styles.detailValue, { color: theme.text }]}>{barberName}</Text>
           </View>
 
-          <View style={styles.divider} />
+          <View style={[styles.divider, { backgroundColor: theme.cardBorder }]} />
 
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Date</Text>
-            <Text style={styles.detailValue}>{date ? formatDate(String(date)) : 'Not selected'}</Text>
+            <Text style={[styles.detailLabel, { color: theme.subtext }]}>Date</Text>
+            <Text style={[styles.detailValue, { color: theme.text }]}>{date ? formatDate(String(date)) : 'Not selected'}</Text>
           </View>
 
-          <View style={styles.divider} />
+          <View style={[styles.divider, { backgroundColor: theme.cardBorder }]} />
 
           <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Time</Text>
-            <Text style={styles.detailValue}>{time}</Text>
+            <Text style={[styles.detailLabel, { color: theme.subtext }]}>Time</Text>
+            <Text style={[styles.detailValue, { color: theme.text }]}>{time}</Text>
           </View>
 
           {totalPrice && (
             <>
-              <View style={styles.divider} />
+              <View style={[styles.divider, { backgroundColor: theme.cardBorder }]} />
               <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>Total Price</Text>
-                <Text style={[styles.detailValue, {fontSize: 18, fontWeight: 'bold'}]}>${totalPrice}</Text>
+                <Text style={[styles.detailLabel, { color: theme.subtext }]}>Total Price</Text>
+                <Text style={[styles.detailValue, { color: theme.text, fontSize: 18, fontWeight: 'bold' }]}>${totalPrice}</Text>
               </View>
             </>
           )}
@@ -178,13 +192,21 @@ export default function ConfirmationScreen() {
         </Text>
       </View>
     </View>
+
+    <ThemeModal
+      visible={visible}
+      title={config.title}
+      message={config.message}
+      buttons={config.buttons}
+      onDismiss={hide}
+    />
+    </>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
     padding: 16,
     justifyContent: 'center',
   },
@@ -192,19 +214,15 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   backText: {
-    color: '#00A651',
     fontSize: 14,
     fontWeight: '600',
   },
   card: {
-    backgroundColor: '#F5F5F5',
     borderRadius: 16,
     padding: 24,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
   },
   title: {
-    color: '#1A1A1A',
     fontSize: 22,
     fontWeight: 'bold',
     marginBottom: 24,
@@ -220,12 +238,10 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   detailLabel: {
-    color: '#666',
     fontSize: 13,
     fontWeight: '600',
   },
   detailValue: {
-    color: '#00A651',
     fontSize: 14,
     fontWeight: '600',
     maxWidth: '50%',
@@ -233,7 +249,6 @@ const styles = StyleSheet.create({
   },
   divider: {
     height: 1,
-    backgroundColor: '#E0E0E0',
   },
   buttonContainer: {
     flexDirection: 'row',

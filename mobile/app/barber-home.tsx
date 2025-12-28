@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator, useColorScheme } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { getBarberAppointments, updateAppointmentStatus } from '../api';
+import { getAppointments, updateAppointmentStatus } from '../api';
+import ThemeModal from '../components/ThemeModal';
+import { useThemeAlert } from '../hooks/useThemeAlert';
 
 interface Appointment {
   id: number;
@@ -13,7 +15,6 @@ interface Appointment {
   time: string;
   status: string;
 }
-
 interface User {
   id: number;
   name: string;
@@ -21,10 +22,21 @@ interface User {
 }
 
 export default function BarberHomeScreen() {
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
+  const theme = {
+    bg: isDark ? '#1A1A1A' : '#FFFFFF',
+    text: isDark ? '#FFFFFF' : '#1A1A1A',
+    cardBg: isDark ? '#2A2A2A' : '#F5F5F5',
+    cardBorder: isDark ? '#3A3A3A' : '#E0E0E0',
+    subtext: isDark ? '#AAA' : '#666',
+  };
+  
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { visible, config, hide, alert } = useThemeAlert();
 
   const loadAppointments = async () => {
     try {
@@ -33,13 +45,13 @@ export default function BarberHomeScreen() {
         const parsedUser: User = JSON.parse(userData);
         setUser(parsedUser);
 
-        const result = await getBarberAppointments(parsedUser.id);
+        const result = await getAppointments(parsedUser.id);
         if (result.success && Array.isArray(result.data)) {
           setAppointments(result.data as Appointment[]);
         }
       }
     } catch (error) {
-      Alert.alert('Error', 'Failed to load appointments');
+      alert('Error', 'Failed to load appointments');
     } finally {
       setIsLoading(false);
     }
@@ -70,31 +82,31 @@ export default function BarberHomeScreen() {
   const getConfirmedAppointments = () => appointments.filter(a => a.status === 'confirmed');
   const getCompletedAppointments = () => appointments.filter(a => a.status === 'completed');
 
-  const handleAccept = async (appointmentId: number) => {
-    Alert.alert('Accept Appointment', 'Mark this as confirmed?', [
-      { text: 'Cancel', style: 'cancel' },
+  const handleAccept = (appointmentId: number) => {
+    alert('Accept Appointment', 'Mark this as confirmed?', [
+      { text: 'Cancel', style: 'cancel', onPress: () => {} },
       {
         text: 'Confirm',
         onPress: async () => {
           try {
             const result = await updateAppointmentStatus(appointmentId, 'confirmed');
             if (result.success) {
-              Alert.alert('Success', 'Appointment confirmed!');
+              alert('Success', 'Appointment confirmed!');
               loadAppointments();
             } else {
-              Alert.alert('Error', result.error || 'Failed to update appointment');
+              alert('Error', result.error || 'Failed to update appointment');
             }
           } catch (error) {
-            Alert.alert('Error', 'Network error. Please try again.');
+            alert('Error', 'Network error. Please try again.');
           }
         },
       },
     ]);
   };
 
-  const handleReject = async (appointmentId: number) => {
-    Alert.alert('Cancel Appointment', 'Are you sure?', [
-      { text: 'No', style: 'cancel' },
+  const handleReject = (appointmentId: number) => {
+    alert('Cancel Appointment', 'Are you sure?', [
+      { text: 'No', style: 'cancel', onPress: () => {} },
       {
         text: 'Yes, Cancel',
         style: 'destructive',
@@ -102,13 +114,13 @@ export default function BarberHomeScreen() {
           try {
             const result = await updateAppointmentStatus(appointmentId, 'cancelled');
             if (result.success) {
-              Alert.alert('Success', 'Appointment cancelled');
+              alert('Success', 'Appointment cancelled');
               loadAppointments();
             } else {
-              Alert.alert('Error', result.error || 'Failed to update appointment');
+              alert('Error', result.error || 'Failed to update appointment');
             }
           } catch (error) {
-            Alert.alert('Error', 'Network error. Please try again.');
+            alert('Error', 'Network error. Please try again.');
           }
         },
       },
@@ -127,51 +139,52 @@ export default function BarberHomeScreen() {
   const confirmedCount = getConfirmedAppointments().length;
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+    <>
+    <ScrollView style={[styles.container, { backgroundColor: theme.bg }]} showsVerticalScrollIndicator={false}>
       {/* Header */}
       <View style={styles.header}>
         <View>
-          <Text style={styles.greeting}>Welcome Barber</Text>
-          <Text style={styles.userName}>{user?.name || 'Barber'}</Text>
+          <Text style={[styles.greeting, { color: '#00A651' }]}>Welcome Barber</Text>
+          <Text style={[styles.userName, { color: theme.text }]}>{user?.name || 'Barber'}</Text>
         </View>
         <TouchableOpacity 
-          style={styles.menuButton}
-          onPress={() => {}}
+          style={styles.logoutButtonHeader}
+          onPress={handleLogout}
         >
-          <Text style={styles.menuDots}>⋮</Text>
+          <Text style={styles.logoutTextHeader}>Logout</Text>
         </TouchableOpacity>
       </View>
 
       {/* Stats */}
       <View style={styles.statsContainer}>
-        <View style={styles.statCard}>
-          <Text style={styles.statNumber}>{pendingCount}</Text>
-          <Text style={styles.statLabel}>Pending</Text>
+        <View style={[styles.statCard, { backgroundColor: theme.cardBg, borderColor: theme.cardBorder }]}>
+          <Text style={[styles.statNumber, { color: '#ED1C24' }]}>{pendingCount}</Text>
+          <Text style={[styles.statLabel, { color: theme.subtext }]}>Pending</Text>
         </View>
-        <View style={styles.statCard}>
-          <Text style={styles.statNumber}>{confirmedCount}</Text>
-          <Text style={styles.statLabel}>Confirmed</Text>
+        <View style={[styles.statCard, { backgroundColor: theme.cardBg, borderColor: theme.cardBorder }]}>
+          <Text style={[styles.statNumber, { color: '#ED1C24' }]}>{confirmedCount}</Text>
+          <Text style={[styles.statLabel, { color: theme.subtext }]}>Confirmed</Text>
         </View>
       </View>
 
       {/* Pending Appointments */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>📋 Pending Appointments</Text>
+        <Text style={[styles.sectionTitle, { color: theme.text }]}>📋 Pending Appointments</Text>
         {getPendingAppointments().length === 0 ? (
-          <Text style={styles.emptyText}>No pending appointments</Text>
+          <Text style={[styles.emptyText, { color: theme.subtext }]}>No pending appointments</Text>
         ) : (
           getPendingAppointments().map((appointment) => (
-            <View key={appointment.id} style={styles.appointmentCard}>
+            <View key={appointment.id} style={[styles.appointmentCard, { backgroundColor: theme.cardBg, borderColor: theme.cardBorder }]}>
               <View style={styles.appointmentHeader}>
-                <Text style={styles.serviceName}>{appointment.serviceName}</Text>
+                <Text style={[styles.serviceName, { color: theme.text }]}>{appointment.serviceName}</Text>
                 <View style={styles.statusBadge}>
                   <Text style={styles.statusText}>PENDING</Text>
                 </View>
               </View>
 
               <View style={styles.appointmentDetails}>
-                <Text style={styles.detailLabel}>Date & Time</Text>
-                <Text style={styles.detailValue}>
+                <Text style={[styles.detailLabel, { color: theme.subtext }]}>Date & Time</Text>
+                <Text style={[styles.detailValue, { color: theme.text }]}>
                   {formatDate(appointment.date)} at {appointment.time}
                 </Text>
               </View>
@@ -197,44 +210,44 @@ export default function BarberHomeScreen() {
 
       {/* Confirmed Appointments */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>✅ Confirmed Appointments</Text>
+        <Text style={[styles.sectionTitle, { color: theme.text }]}>✅ Confirmed Appointments</Text>
         {getConfirmedAppointments().length === 0 ? (
-          <Text style={styles.emptyText}>No confirmed appointments</Text>
+          <Text style={[styles.emptyText, { color: theme.subtext }]}>No confirmed appointments</Text>
         ) : (
           getConfirmedAppointments().map((appointment) => (
-            <View key={appointment.id} style={[styles.appointmentCard, styles.confirmedCard]}>
+            <View key={appointment.id} style={[styles.appointmentCard, styles.confirmedCard, { backgroundColor: theme.cardBg, borderColor: theme.cardBorder }]}>
               <View style={styles.appointmentHeader}>
-                <Text style={styles.serviceName}>{appointment.serviceName}</Text>
+                <Text style={[styles.serviceName, { color: theme.text }]}>{appointment.serviceName}</Text>
                 <View style={[styles.statusBadge, styles.confirmedBadge]}>
                   <Text style={styles.confirmedStatusText}>CONFIRMED</Text>
                 </View>
               </View>
 
               <View style={styles.appointmentDetails}>
-                <Text style={styles.detailLabel}>Date & Time</Text>
-                <Text style={styles.detailValue}>
+                <Text style={[styles.detailLabel, { color: theme.subtext }]}>Date & Time</Text>
+                <Text style={[styles.detailValue, { color: theme.text }]}>
                   {formatDate(appointment.date)} at {appointment.time}
                 </Text>
               </View>
 
               <TouchableOpacity 
                 style={styles.completeButton}
-                onPress={async () => {
-                  Alert.alert('Complete', 'Mark appointment as completed?', [
-                    { text: 'Cancel', style: 'cancel' },
+                onPress={() => {
+                  alert('Complete', 'Mark appointment as completed?', [
+                    { text: 'Cancel', style: 'cancel', onPress: () => {} },
                     {
                       text: 'Complete',
                       onPress: async () => {
                         try {
                           const result = await updateAppointmentStatus(appointment.id, 'completed');
                           if (result.success) {
-                            Alert.alert('Done', 'Appointment marked as completed');
+                            alert('Done', 'Appointment marked as completed');
                             loadAppointments();
                           } else {
-                            Alert.alert('Error', result.error || 'Failed to update appointment');
+                            alert('Error', result.error || 'Failed to update appointment');
                           }
                         } catch (error) {
-                          Alert.alert('Error', 'Network error. Please try again.');
+                          alert('Error', 'Network error. Please try again.');
                         }
                       },
                     },
@@ -248,16 +261,17 @@ export default function BarberHomeScreen() {
         )}
       </View>
 
-      {/* Logout */}
-      <TouchableOpacity 
-        style={styles.logoutButton}
-        onPress={handleLogout}
-      >
-        <Text style={styles.logoutText}>Logout</Text>
-      </TouchableOpacity>
-
       <View style={{ height: 20 }} />
     </ScrollView>
+
+    <ThemeModal
+      visible={visible}
+      title={config.title}
+      message={config.message}
+      buttons={config.buttons}
+      onDismiss={hide}
+    />
+    </>
   );
 }
 
@@ -284,6 +298,17 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     marginTop: 4,
+  },
+  logoutButtonHeader: {
+    backgroundColor: '#ED1C24',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 6,
+  },
+  logoutTextHeader: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+    fontSize: 12,
   },
   menuButton: {
     padding: 8,

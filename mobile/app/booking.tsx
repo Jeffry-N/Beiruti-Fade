@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator, useColorScheme } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getBarbers, getServices } from '../api';
+import ThemeModal from '../components/ThemeModal';
+import { useThemeAlert } from '../hooks/useThemeAlert';
 
 interface Service {
   id: number;
@@ -18,6 +21,16 @@ interface Barber {
 }
 
 export default function BookingScreen() {
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
+  const theme = {
+    bg: isDark ? '#1A1A1A' : '#FFFFFF',
+    text: isDark ? '#FFFFFF' : '#1A1A1A',
+    cardBg: isDark ? '#2A2A2A' : '#F5F5F5',
+    cardBorder: isDark ? '#3A3A3A' : '#E0E0E0',
+    subtext: isDark ? '#AAA' : '#666',
+  };
+  
   const router = useRouter();
   const { serviceId: initialServiceId, appointmentIds, reschedule } = useLocalSearchParams();
   
@@ -32,6 +45,7 @@ export default function BookingScreen() {
   const [barbers, setBarbers] = useState<Barber[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
+  const { visible, config, hide, alert } = useThemeAlert();
 
   const timeSlots = [
     '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
@@ -71,7 +85,7 @@ export default function BookingScreen() {
           setBarbers(barbersResult.data as Barber[]);
         }
       } catch (error) {
-        Alert.alert('Error', 'Failed to load data');
+        alert('Error', 'Failed to load data');
       } finally {
         setIsLoading(false);
       }
@@ -82,7 +96,7 @@ export default function BookingScreen() {
 
   const handleConfirm = () => {
     if (selectedServices.length === 0 || !selectedBarber || !selectedDate || !selectedTime) {
-      Alert.alert('Error', 'Please select at least one service, a barber, date, and time');
+      alert('Error', 'Please select at least one service, a barber, date, and time');
       return;
     }
 
@@ -121,30 +135,33 @@ export default function BookingScreen() {
 
   if (isLoading) {
     return (
-      <View style={styles.container}>
+      <View style={[styles.container, { backgroundColor: theme.bg }]}>
+        <StatusBar backgroundColor={theme.bg} />
         <ActivityIndicator size="large" color="#ED1C24" />
       </View>
     );
   }
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+    <>
+    <ScrollView style={[styles.container, { backgroundColor: theme.bg }]} showsVerticalScrollIndicator={false}>
       {/* Header */}
       <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-        <Text style={styles.backText}>← Back</Text>
+        <Text style={[styles.backText, { color: '#00A651' }]}>← Back</Text>
       </TouchableOpacity>
 
-      <Text style={styles.title}>Book Appointment</Text>
+      <Text style={[styles.title, { color: theme.text }]}>Book Appointment</Text>
 
       {/* Services Selection */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Select Service</Text>
+        <Text style={[styles.sectionTitle, { color: theme.text }]}>Select Service</Text>
         <View style={styles.optionsContainer}>
           {services.map((service) => (
             <TouchableOpacity
               key={service.id}
               style={[
                 styles.optionButton,
+                { backgroundColor: selectedServices.includes(service.id) ? '#ED1C24' : theme.cardBg, borderColor: theme.cardBorder },
                 selectedServices.includes(service.id) && styles.optionButtonActive
               ]}
               onPress={() => {
@@ -157,12 +174,14 @@ export default function BookingScreen() {
             >
               <Text style={[
                 styles.optionText,
+                { color: selectedServices.includes(service.id) ? '#FFFFFF' : theme.text },
                 selectedServices.includes(service.id) && styles.optionTextActive
               ]}>
                 {service.name}
               </Text>
               <Text style={[
                 styles.optionSubText,
+                { color: selectedServices.includes(service.id) ? '#FFFFFF' : theme.subtext },
                 selectedServices.includes(service.id) && styles.optionSubTextActive
               ]}>
                 ${service.price.toFixed(2)}
@@ -174,20 +193,20 @@ export default function BookingScreen() {
 
       {/* Barber Selection */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Select Barber</Text>
+        <Text style={[styles.sectionTitle, { color: theme.text }]}>Select Barber</Text>
         <View style={styles.optionsContainer}>
           {barbers.map((barber) => (
             <TouchableOpacity
               key={barber.id}
               style={[
                 styles.optionButton,
-                selectedBarber === barber.id && styles.optionButtonActive
+                { backgroundColor: selectedBarber === barber.id ? '#ED1C24' : theme.cardBg, borderColor: theme.cardBorder }
               ]}
               onPress={() => setSelectedBarber(barber.id)}
             >
               <Text style={[
                 styles.optionText,
-                selectedBarber === barber.id && styles.optionTextActive
+                { color: selectedBarber === barber.id ? '#FFFFFF' : theme.text }
               ]}>
                 {barber.name}
               </Text>
@@ -198,7 +217,7 @@ export default function BookingScreen() {
 
       {/* Date Selection */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Select Date</Text>
+        <Text style={[styles.sectionTitle, { color: theme.text }]}>Select Date</Text>
         <ScrollView 
           horizontal 
           showsHorizontalScrollIndicator={false}
@@ -211,18 +230,21 @@ export default function BookingScreen() {
                 key={date}
                 style={[
                   styles.dateButton,
+                  { backgroundColor: selectedDate === date ? '#ED1C24' : theme.cardBg, borderColor: theme.cardBorder },
                   selectedDate === date && styles.dateButtonActive
                 ]}
                 onPress={() => setSelectedDate(date)}
               >
                 <Text style={[
                   styles.dateDay,
+                  { color: selectedDate === date ? '#FFFFFF' : theme.text },
                   selectedDate === date && styles.dateDayActive
                 ]}>
                   {day}
                 </Text>
                 <Text style={[
                   styles.dateNum,
+                  { color: selectedDate === date ? '#FFFFFF' : theme.text },
                   selectedDate === date && styles.dateNumActive
                 ]}>
                   {dayNum}
@@ -235,19 +257,21 @@ export default function BookingScreen() {
 
       {/* Time Selection */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Select Time</Text>
+        <Text style={[styles.sectionTitle, { color: theme.text }]}>Select Time</Text>
         <View style={styles.timesGrid}>
           {timeSlots.map((time) => (
             <TouchableOpacity
               key={time}
               style={[
                 styles.timeButton,
+                { backgroundColor: selectedTime === time ? '#ED1C24' : theme.cardBg, borderColor: theme.cardBorder },
                 selectedTime === time && styles.timeButtonActive
               ]}
               onPress={() => setSelectedTime(time)}
             >
               <Text style={[
                 styles.timeText,
+                { color: selectedTime === time ? '#FFFFFF' : theme.text },
                 selectedTime === time && styles.timeTextActive
               ]}>
                 {time}
@@ -267,13 +291,21 @@ export default function BookingScreen() {
 
       <View style={{ height: 20 }} />
     </ScrollView>
+
+    <ThemeModal
+      visible={visible}
+      title={config.title}
+      message={config.message}
+      buttons={config.buttons}
+      onDismiss={hide}
+    />
+    </>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
     padding: 16,
   },
   backButton: {
@@ -286,7 +318,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   title: {
-    color: '#1A1A1A',
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 24,
@@ -295,7 +326,6 @@ const styles = StyleSheet.create({
     marginBottom: 28,
   },
   sectionTitle: {
-    color: '#1A1A1A',
     fontSize: 14,
     fontWeight: 'bold',
     marginBottom: 12,
@@ -308,19 +338,16 @@ const styles = StyleSheet.create({
   optionButton: {
     flex: 1,
     minWidth: '45%',
-    backgroundColor: '#F5F5F5',
     borderRadius: 8,
     padding: 12,
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#E0E0E0',
   },
   optionButtonActive: {
     backgroundColor: '#ED1C24',
     borderColor: '#ED1C24',
   },
   optionText: {
-    color: '#1A1A1A',
     fontWeight: '600',
     fontSize: 12,
   },
@@ -328,7 +355,6 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   optionSubText: {
-    color: '#666',
     fontSize: 10,
     marginTop: 4,
   },
@@ -342,20 +368,17 @@ const styles = StyleSheet.create({
   dateButton: {
     width: 60,
     height: 80,
-    backgroundColor: '#F5F5F5',
     borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 8,
     borderWidth: 2,
-    borderColor: '#E0E0E0',
   },
   dateButtonActive: {
     backgroundColor: '#ED1C24',
     borderColor: '#ED1C24',
   },
   dateDay: {
-    color: '#666',
     fontSize: 11,
     fontWeight: '600',
   },
@@ -363,7 +386,6 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   dateNum: {
-    color: '#1A1A1A',
     fontSize: 20,
     fontWeight: 'bold',
     marginTop: 4,
@@ -379,19 +401,16 @@ const styles = StyleSheet.create({
   timeButton: {
     flex: 1,
     minWidth: '30%',
-    backgroundColor: '#F5F5F5',
     borderRadius: 8,
     paddingVertical: 12,
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#E0E0E0',
   },
   timeButtonActive: {
     backgroundColor: '#00A651',
     borderColor: '#00A651',
   },
   timeText: {
-    color: '#1A1A1A',
     fontWeight: '600',
     fontSize: 13,
   },
