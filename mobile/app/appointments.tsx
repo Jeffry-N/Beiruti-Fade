@@ -72,7 +72,7 @@ export default function AppointmentsScreen() {
   if (isLoading) {
     return (
       <View style={styles.container}>
-        <ActivityIndicator size="large" color="#CCFF00" />
+        <ActivityIndicator size="large" color="#ED1C24" />
       </View>
     );
   }
