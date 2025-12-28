@@ -86,7 +86,11 @@ export default function HomeScreen() {
 
   return (
     <>
-    <ScrollView style={[styles.container, { backgroundColor: theme.bg }]} showsVerticalScrollIndicator={false}>
+    <ScrollView
+      style={[styles.container, { backgroundColor: theme.bg }]}
+      contentContainerStyle={[styles.scrollContent]}
+      showsVerticalScrollIndicator={false}
+    >
       {/* Header */}
       <View style={styles.header}>
         <View>
@@ -130,7 +134,6 @@ export default function HomeScreen() {
 
       {/* Services */}
       {activeTab === 'services' && (
-      <>
       <View style={styles.servicesContainer}>
         <View style={styles.servicesGrid}>
           {services.map((service) => (
@@ -147,22 +150,11 @@ export default function HomeScreen() {
           ))}
         </View>
       </View>
-
-      {/* Book Appointment Button */}
-      <TouchableOpacity 
-        style={styles.bookButton}
-        onPress={handleBooking}
-      >
-        <Text style={styles.bookButtonText}>Book Appointment</Text>
-      </TouchableOpacity>
-      </>
       )}
 
       {/* Barbers Tab */}
       {activeTab === 'barbers' && (
-      <>
       <View style={styles.barbersSection}>
-        <Text style={[styles.sectionTitle, { color: theme.text }]}>Our Barbers</Text>
         {barbers.map((barber) => (
           <TouchableOpacity key={barber.id} style={[styles.barberCard, { backgroundColor: theme.cardBg, borderColor: theme.cardBorder }]} onPress={() => router.push({ pathname: '/barber-detail', params: { id: String(barber.id) } } as any)}>
             <View style={styles.barberAvatar}>
@@ -175,22 +167,11 @@ export default function HomeScreen() {
           </TouchableOpacity>
         ))}
       </View>
-      
-      {/* Book Appointment Button */}
-      <TouchableOpacity 
-        style={styles.bookButton}
-        onPress={handleBooking}
-      >
-        <Text style={styles.bookButtonText}>Book Appointment</Text>
-      </TouchableOpacity>
-      </>
       )}
 
       {/* Promo Tab */}
       {activeTab === 'promo' && (
-      <>
       <View style={styles.barbersSection}>
-        <Text style={[styles.sectionTitle, { color: theme.text }]}>Special Offers</Text>
         <View style={{padding: 20, backgroundColor: theme.cardBg, borderRadius: 12, marginBottom: 12, borderWidth: 1, borderColor: theme.cardBorder}}>
           <Text style={{color: '#ED1C24', fontSize: 18, fontWeight: 'bold', marginBottom: 8}}>🎉 New Customer Special</Text>
           <Text style={{color: theme.text, fontSize: 14, marginBottom: 8}}>Get 20% off your first appointment!</Text>
@@ -202,26 +183,25 @@ export default function HomeScreen() {
           <Text style={{color: theme.subtext, fontSize: 12}}>Valid Saturday & Sunday</Text>
         </View>
       </View>
-      
-      {/* Book Appointment Button */}
-      <TouchableOpacity 
-        style={styles.bookButton}
-        onPress={handleBooking}
-      >
-        <Text style={styles.bookButtonText}>Book Appointment</Text>
-      </TouchableOpacity>
-      </>
       )}
 
-      {/* My Appointments Button */}
-      <TouchableOpacity 
-        style={styles.appointmentsButton}
-        onPress={() => router.push('/appointments' as any)}
-      >
-        <Text style={styles.appointmentsButtonText}>My Appointments</Text>
-      </TouchableOpacity>
+      <View style={styles.footerSpacer} />
 
-      <View style={{ height: 20 }} />
+      <View style={styles.footerButtons}>
+        <TouchableOpacity 
+          style={styles.bookButton}
+          onPress={handleBooking}
+        >
+          <Text style={styles.bookButtonText}>Book Appointment</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={styles.appointmentsButton}
+          onPress={() => router.push('/appointments' as any)}
+        >
+          <Text style={styles.appointmentsButtonText}>My Appointments</Text>
+        </TouchableOpacity>
+      </View>
     </ScrollView>
 
     <ThemeModal
@@ -239,6 +219,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFFFFF',
     padding: 16,
+  },
+  scrollContent: {
+    flexGrow: 1,
   },
   header: {
     flexDirection: 'row',
@@ -297,6 +280,8 @@ const styles = StyleSheet.create({
   tabsContainer: {
     flexDirection: 'row',
     marginBottom: 20,
+    justifyContent: 'center',
+    gap: 8,
   },
   tabActive: {
     paddingVertical: 8,
@@ -471,6 +456,12 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 4,
     elevation: 3,
+  },
+  footerButtons: {
+    marginTop: 'auto',
+  },
+  footerSpacer: {
+    height: 12,
   },
   appointmentsButtonText: {
     color: '#FFFFFF',

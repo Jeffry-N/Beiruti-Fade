@@ -172,7 +172,7 @@ export default function BarberHomeScreen() {
 
       {/* Pending Appointments */}
       <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: theme.text }]}>📋 Pending Appointments</Text>
+        <Text style={[styles.sectionTitle, { color: theme.text }]}>Pending Appointments</Text>
         {getPendingAppointments().length === 0 ? (
           <Text style={[styles.emptyText, { color: theme.subtext }]}>No pending appointments</Text>
         ) : (
@@ -197,13 +197,13 @@ export default function BarberHomeScreen() {
                   style={styles.acceptButton}
                   onPress={() => handleAccept(appointment.id)}
                 >
-                  <Text style={styles.acceptButtonText}>✓ Accept</Text>
+                  <Text style={styles.acceptButtonText}>Accept</Text>
                 </TouchableOpacity>
                 <TouchableOpacity 
                   style={styles.rejectButton}
                   onPress={() => handleReject(appointment.id)}
                 >
-                  <Text style={styles.rejectButtonText}>✕ Reject</Text>
+                  <Text style={styles.rejectButtonText}>Reject</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -213,7 +213,7 @@ export default function BarberHomeScreen() {
 
       {/* Confirmed Appointments */}
       <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: theme.text }]}>✅ Confirmed Appointments</Text>
+        <Text style={[styles.sectionTitle, { color: theme.text }]}>Confirmed Appointments</Text>
         {getConfirmedAppointments().length === 0 ? (
           <Text style={[styles.emptyText, { color: theme.subtext }]}>No confirmed appointments</Text>
         ) : (
