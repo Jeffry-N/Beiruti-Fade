@@ -135,20 +135,22 @@ export default function HomeScreen() {
       {/* Services */}
       {activeTab === 'services' && (
       <View style={styles.servicesContainer}>
-        <View style={styles.servicesGrid}>
-          {services.map((service) => (
-            <View 
-              key={service.id} 
-              style={[styles.serviceCard, { backgroundColor: theme.cardBg, borderColor: theme.cardBorder }]}
-            >
-              <View style={styles.serviceIcon}>
-                <Text style={styles.iconText}>✂️</Text>
-              </View>
+        {services.map((service) => (
+          <TouchableOpacity 
+            key={service.id} 
+            style={[styles.serviceCard, { backgroundColor: theme.cardBg, borderColor: theme.cardBorder }]}
+            onPress={() => router.push({ pathname: '/service-detail', params: { id: String(service.id), name: service.name, description: service.description, price: String(service.price) } } as any)}
+          >
+            <View style={styles.serviceIcon}>
+              <Text style={styles.iconText}>✂️</Text>
+            </View>
+            <View style={styles.serviceInfo}>
               <Text style={[styles.serviceName, { color: theme.text }]}>{service.name}</Text>
+              <Text style={[styles.serviceDescription, { color: theme.subtext }]} numberOfLines={2}>{service.description}</Text>
               <Text style={[styles.servicePrice, { color: '#ED1C24' }]}>${service.price}</Text>
             </View>
-          ))}
-        </View>
+          </TouchableOpacity>
+        ))}
       </View>
       )}
 
@@ -310,20 +312,17 @@ const styles = StyleSheet.create({
   servicesContainer: {
     marginBottom: 20,
   },
-  servicesGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-  },
   serviceCard: {
-    width: '48%',
+    width: '100%',
     backgroundColor: '#F5F5F5',
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
     borderWidth: 1,
     borderColor: '#E0E0E0',
+    flexDirection: 'row',
     alignItems: 'center',
+    gap: 12,
   },
   serviceIcon: {
     width: 48,
@@ -332,7 +331,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#00A651',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 12,
   },
   iconText: {
     fontSize: 24,
@@ -343,15 +341,17 @@ const styles = StyleSheet.create({
   serviceName: {
     color: '#1A1A1A',
     fontWeight: 'bold',
-    fontSize: 13,
-    textAlign: 'center',
+    fontSize: 14,
     marginBottom: 4,
+  },
+  serviceDescription: {
+    fontSize: 12,
+    marginBottom: 6,
   },
   servicePrice: {
     color: '#ED1C24',
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '600',
-    textAlign: 'center',
   },
   serviceDesc: {
     color: '#666',
