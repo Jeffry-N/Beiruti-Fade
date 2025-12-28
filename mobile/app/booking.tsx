@@ -19,10 +19,10 @@ interface Barber {
 
 export default function BookingScreen() {
   const router = useRouter();
-  const { serviceId: initialServiceId } = useLocalSearchParams();
+  const { serviceId: initialServiceId, appointmentIds, reschedule } = useLocalSearchParams();
   
-  const [selectedService, setSelectedService] = useState<number | null>(
-    initialServiceId ? Number(initialServiceId) : null
+  const [selectedServices, setSelectedServices] = useState<number[]>(
+    initialServiceId ? [Number(initialServiceId)] : []
   );
   const [selectedBarber, setSelectedBarber] = useState<number | null>(null);
   const [selectedDate, setSelectedDate] = useState<string>('');
@@ -81,23 +81,32 @@ export default function BookingScreen() {
   }, []);
 
   const handleConfirm = () => {
-    if (!selectedService || !selectedBarber || !selectedDate || !selectedTime) {
-      Alert.alert('Error', 'Please select all options');
+    if (selectedServices.length === 0 || !selectedBarber || !selectedDate || !selectedTime) {
+      Alert.alert('Error', 'Please select at least one service, a barber, date, and time');
       return;
     }
 
-    const selectedServiceName = services.find(s => s.id === selectedService)?.name || '';
+    const selectedServiceNames = selectedServices
+      .map(id => services.find(s => s.id === id)?.name)
+      .filter(Boolean)
+      .join(', ');
     const selectedBarberName = barbers.find(b => b.id === selectedBarber)?.name || '';
+    const totalPrice = selectedServices
+      .map(id => services.find(s => s.id === id)?.price || 0)
+      .reduce((sum, price) => sum + price, 0);
 
     router.push({
       pathname: '/confirmation',
       params: {
-        serviceId: selectedService,
+        serviceIds: selectedServices.join(','),
         barberId: selectedBarber,
         date: selectedDate,
         time: selectedTime,
-        serviceName: selectedServiceName,
+        serviceName: selectedServiceNames,
         barberName: selectedBarberName,
+        totalPrice: totalPrice.toString(),
+        ...(appointmentIds && { appointmentIds: appointmentIds }),
+        ...(reschedule && { reschedule: reschedule }),
       }
     } as any);
   };
@@ -136,19 +145,25 @@ export default function BookingScreen() {
               key={service.id}
               style={[
                 styles.optionButton,
-                selectedService === service.id && styles.optionButtonActive
+                selectedServices.includes(service.id) && styles.optionButtonActive
               ]}
-              onPress={() => setSelectedService(service.id)}
+              onPress={() => {
+                if (selectedServices.includes(service.id)) {
+                  setSelectedServices(selectedServices.filter(id => id !== service.id));
+                } else {
+                  setSelectedServices([...selectedServices, service.id]);
+                }
+              }}
             >
               <Text style={[
                 styles.optionText,
-                selectedService === service.id && styles.optionTextActive
+                selectedServices.includes(service.id) && styles.optionTextActive
               ]}>
                 {service.name}
               </Text>
               <Text style={[
                 styles.optionSubText,
-                selectedService === service.id && styles.optionSubTextActive
+                selectedServices.includes(service.id) && styles.optionSubTextActive
               ]}>
                 ${service.price.toFixed(2)}
               </Text>

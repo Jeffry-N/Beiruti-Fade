@@ -11,6 +11,7 @@ interface Appointment {
   date: string;
   time: string;
   status: string;
+  allAppointments?: Appointment[];
 }
 
 export default function AppointmentsScreen() {
@@ -28,12 +29,36 @@ export default function AppointmentsScreen() {
 
         const result = await getAppointments(parsedUser.id);
         if (result.success && Array.isArray(result.data)) {
-          setAppointments(result.data as Appointment[]);
+          // Filter out cancelled appointments
+          const activeAppointments = (result.data as Appointment[]).filter(
+            apt => apt.status !== 'cancelled' && apt.status !== 'completed'
+          );
+          
+          // Group appointments by barber, date, and time
+          const appointmentMap = new Map<string, any>();
+          
+          activeAppointments.forEach((apt) => {
+            const key = `${apt.barberName}-${apt.date}-${apt.time}`;
+            
+            if (appointmentMap.has(key)) {
+              // Merge service names
+              const existing = appointmentMap.get(key);
+              existing.serviceName = existing.serviceName + ', ' + apt.serviceName;
+              existing.allAppointments = [...(existing.allAppointments || [apt]), apt];
+            } else {
+              appointmentMap.set(key, {
+                ...apt,
+                allAppointments: [apt]
+              });
+            }
+          });
+          
+          setAppointments(Array.from(appointmentMap.values()));
         }
       }
+      setIsLoading(false);
     } catch (error) {
-      Alert.alert('Error', 'Failed to load appointments');
-    } finally {
+      console.error('Error loading appointments:', error);
       setIsLoading(false);
     }
   };
@@ -130,10 +155,64 @@ export default function AppointmentsScreen() {
               </View>
 
               <View style={styles.appointmentActions}>
-                <TouchableOpacity style={styles.actionButton}>
+                <TouchableOpacity 
+                  style={styles.actionButton}
+                  onPress={() => {
+                    // Get all appointment IDs from grouped appointments
+                    const allIds = appointment.allAppointments 
+                      ? appointment.allAppointments.map(apt => apt.id).join(',')
+                      : appointment.id.toString();
+                    
+                    router.push({
+                      pathname: '/booking',
+                      params: { 
+                        appointmentIds: allIds,
+                        reschedule: 'true',
+                        barberId: appointment.barberName,
+                        date: appointment.date,
+                        time: appointment.time
+                      }
+                    } as any);
+                  }}
+                >
                   <Text style={styles.actionButtonText}>Reschedule</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={[styles.actionButton, styles.cancelButton]}>
+                <TouchableOpacity 
+                  style={[styles.actionButton, styles.cancelButton]}
+                  onPress={() => {
+                    Alert.alert(
+                      'Cancel Appointment',
+                      'Are you sure you want to cancel this appointment?',
+                      [
+                        { text: 'No', style: 'cancel' },
+                        {
+                          text: 'Yes, Cancel',
+                          style: 'destructive',
+                          onPress: async () => {
+                            try {
+                              const { updateAppointmentStatus } = require('../api');
+                              
+                              // Cancel all appointments in the group (all services)
+                              const appointmentsToCancel = appointment.allAppointments || [appointment];
+                              
+                              for (const apt of appointmentsToCancel) {
+                                const result = await updateAppointmentStatus(apt.id, 'cancelled');
+                                if (!result.success) {
+                                  throw new Error(result.error || 'Failed to cancel appointment');
+                                }
+                              }
+                              
+                              Alert.alert('Success', 'Appointment cancelled');
+                              loadAppointments();
+                            } catch (error: any) {
+                              Alert.alert('Error', error.message || 'Network error. Please try again.');
+                            }
+                          },
+                        },
+                      ]
+                    );
+                  }}
+                >
                   <Text style={styles.cancelButtonText}>Cancel</Text>
                 </TouchableOpacity>
               </View>

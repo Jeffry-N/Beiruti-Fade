@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { bookAppointment } from '../api';
+import { bookAppointment, updateAppointmentDate } from '../api';
 
 export default function ConfirmationScreen() {
   const router = useRouter();
-  const { serviceId, barberId, date, time, serviceName, barberName } = useLocalSearchParams();
+  const { serviceIds, barberId, date, time, serviceName, barberName, totalPrice, appointmentIds, reschedule } = useLocalSearchParams();
   const [isLoading, setIsLoading] = useState(false);
   const [user, setUser] = useState<any>(null);
 
@@ -27,25 +27,62 @@ export default function ConfirmationScreen() {
     }
 
     setIsLoading(true);
-    const result = await bookAppointment(
-      user.id,
-      Number(barberId),
-      Number(serviceId),
-      String(date),
-      String(time)
-    );
-
-    setIsLoading(false);
-
-    if (result.success) {
-      Alert.alert('Success', 'Appointment booked successfully!', [
-        {
-          text: 'OK',
-          onPress: () => router.replace('/home' as any),
-        },
-      ]);
-    } else {
-      Alert.alert('Error', result.error || 'Failed to book appointment');
+    
+    try {
+      // If this is a reschedule, update the existing appointment(s)
+      if (reschedule === 'true' && appointmentIds) {
+        const appointmentIdArray = String(appointmentIds).split(',').map(id => Number(id));
+        
+        // Update all appointments in the group
+        for (const aptId of appointmentIdArray) {
+          const result = await updateAppointmentDate(
+            aptId,
+            String(date),
+            String(time)
+          );
+          
+          if (!result.success) {
+            throw new Error(result.error || 'Failed to reschedule appointment');
+          }
+        }
+        
+        setIsLoading(false);
+        Alert.alert('Success', 'Appointment rescheduled successfully!', [
+          {
+            text: 'OK',
+            onPress: () => router.replace('/appointments' as any),
+          },
+        ]);
+      } else {
+        // Otherwise, book new appointments
+        const serviceIdArray = String(serviceIds).split(',').map(id => Number(id));
+        
+        // Book all services sequentially
+        for (const serviceId of serviceIdArray) {
+          const result = await bookAppointment(
+            user.id,
+            Number(barberId),
+            serviceId,
+            String(date),
+            String(time)
+          );
+          
+          if (!result.success) {
+            throw new Error(result.error || 'Failed to book one or more services');
+          }
+        }
+        
+        setIsLoading(false);
+        Alert.alert('Success', `${serviceIdArray.length} appointment${serviceIdArray.length > 1 ? 's' : ''} booked successfully!`, [
+          {
+            text: 'OK',
+            onPress: () => router.replace('/home' as any),
+          },
+        ]);
+      }
+    } catch (error: any) {
+      setIsLoading(false);
+      Alert.alert('Error', error.message || 'Failed to process appointment');
     }
   };
 
@@ -101,6 +138,16 @@ export default function ConfirmationScreen() {
             <Text style={styles.detailLabel}>Time</Text>
             <Text style={styles.detailValue}>{time}</Text>
           </View>
+
+          {totalPrice && (
+            <>
+              <View style={styles.divider} />
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>Total Price</Text>
+                <Text style={[styles.detailValue, {fontSize: 18, fontWeight: 'bold'}]}>${totalPrice}</Text>
+              </View>
+            </>
+          )}
         </View>
 
         {/* Action Buttons */}

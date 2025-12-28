@@ -63,5 +63,8 @@ export const getAppointments = (customerId: number) =>
 export const getBarberAppointments = (barberId: number) =>
   apiCall(`/appointment?barberId=${barberId}`, 'GET');
 
+export const updateAppointmentDate = (appointmentId: number, appointmentDate: string, appointmentTime: string) =>
+  apiCall('/appointment/reschedule', 'PUT', { appointmentId, appointmentDate, appointmentTime });
+
 export const updateAppointmentStatus = (appointmentId: number, status: 'confirmed' | 'completed' | 'cancelled') =>
   apiCall('/appointment', 'PUT', { appointmentId, status });

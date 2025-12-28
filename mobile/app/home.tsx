@@ -23,6 +23,7 @@ export default function HomeScreen() {
   const [services, setServices] = useState<Service[]>([]);
   const [barbers, setBarbers] = useState<Barber[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<'services' | 'barbers' | 'promo'>('services');
 
   useEffect(() => {
     const loadData = async () => {
@@ -56,10 +57,9 @@ export default function HomeScreen() {
     router.replace('/' as any);
   };
 
-  const handleBooking = (serviceId: number) => {
+  const handleBooking = () => {
     router.push({
-      pathname: '/booking',
-      params: { serviceId }
+      pathname: '/booking'
     } as any);
   };
 
@@ -91,24 +91,34 @@ export default function HomeScreen() {
 
       {/* Tabs */}
       <View style={styles.tabsContainer}>
-        <TouchableOpacity style={styles.tabActive}>
-          <Text style={styles.tabTextActive}>SERVICES</Text>
+        <TouchableOpacity 
+          style={activeTab === 'services' ? styles.tabActive : styles.tab}
+          onPress={() => setActiveTab('services')}
+        >
+          <Text style={activeTab === 'services' ? styles.tabTextActive : styles.tabText}>SERVICES</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.tab}>
-          <Text style={styles.tabText}>BARBERS</Text>
+        <TouchableOpacity 
+          style={activeTab === 'barbers' ? styles.tabActive : styles.tab}
+          onPress={() => setActiveTab('barbers')}
+        >
+          <Text style={activeTab === 'barbers' ? styles.tabTextActive : styles.tabText}>BARBERS</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.tab}>
-          <Text style={styles.tabText}>PROMO</Text>
+        <TouchableOpacity 
+          style={activeTab === 'promo' ? styles.tabActive : styles.tab}
+          onPress={() => setActiveTab('promo')}
+        >
+          <Text style={activeTab === 'promo' ? styles.tabTextActive : styles.tabText}>PROMO</Text>
         </TouchableOpacity>
       </View>
 
       {/* Services */}
+      {activeTab === 'services' && (
+      <>
       <View style={styles.servicesContainer}>
         {services.map((service) => (
           <TouchableOpacity 
             key={service.id} 
             style={styles.serviceCard}
-            onPress={() => handleBooking(service.id)}
           >
             <View style={styles.serviceIcon}>
               <Text style={styles.iconText}>✂️</Text>
@@ -117,7 +127,10 @@ export default function HomeScreen() {
               <Text style={styles.serviceName}>{service.name}</Text>
               <Text style={styles.serviceDesc}>{service.description}</Text>
             </View>
-            <TouchableOpacity style={styles.addButton}>
+            <TouchableOpacity 
+              style={styles.addButton}
+              onPress={handleBooking}
+            >
               <Text style={styles.plusSign}>+</Text>
             </TouchableOpacity>
           </TouchableOpacity>
@@ -129,11 +142,14 @@ export default function HomeScreen() {
         <Text style={styles.loadMore}>LOAD MORE</Text>
         <Text style={{color: '#00A651', marginLeft: 5}}>→</Text>
       </View>
+      </>
+      )}
 
-      {/* Top Barbers */}
+      {/* Barbers Tab */}
+      {activeTab === 'barbers' && (
       <View style={styles.barbersSection}>
-        <Text style={styles.sectionTitle}>Top Barbers</Text>
-        {barbers.slice(0, 2).map((barber) => (
+        <Text style={styles.sectionTitle}>Our Barbers</Text>
+        {barbers.map((barber) => (
           <View key={barber.id} style={styles.barberCard}>
             <View style={styles.barberAvatar}>
               <Text style={styles.avatarText}>{barber.name.charAt(0)}</Text>
@@ -145,6 +161,24 @@ export default function HomeScreen() {
           </View>
         ))}
       </View>
+      )}
+
+      {/* Promo Tab */}
+      {activeTab === 'promo' && (
+      <View style={styles.barbersSection}>
+        <Text style={styles.sectionTitle}>Special Offers</Text>
+        <View style={{padding: 20, backgroundColor: '#F5F5F5', borderRadius: 12, marginBottom: 12, borderWidth: 1, borderColor: '#E0E0E0'}}>
+          <Text style={{color: '#ED1C24', fontSize: 18, fontWeight: 'bold', marginBottom: 8}}>🎉 New Customer Special</Text>
+          <Text style={{color: '#1A1A1A', fontSize: 14, marginBottom: 8}}>Get 20% off your first appointment!</Text>
+          <Text style={{color: '#666', fontSize: 12}}>Use code: WELCOME20</Text>
+        </View>
+        <View style={{padding: 20, backgroundColor: '#F5F5F5', borderRadius: 12, marginBottom: 12, borderWidth: 1, borderColor: '#E0E0E0'}}>
+          <Text style={{color: '#00A651', fontSize: 18, fontWeight: 'bold', marginBottom: 8}}>💈 Weekend Special</Text>
+          <Text style={{color: '#1A1A1A', fontSize: 14, marginBottom: 8}}>Book 3 services, get the 4th free!</Text>
+          <Text style={{color: '#666', fontSize: 12}}>Valid Saturday & Sunday</Text>
+        </View>
+      </View>
+      )}
 
       {/* My Appointments Button */}
       <TouchableOpacity 
