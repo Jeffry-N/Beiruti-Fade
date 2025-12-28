@@ -90,8 +90,10 @@ export default function HomeScreen() {
       {/* Header */}
       <View style={styles.header}>
         <View>
-          <Text style={[styles.greeting, { color: '#00A651' }]}>Welcome</Text>
-          <Text style={[styles.userName, { color: theme.text }]}>{user?.name || 'User'}</Text>
+          <Text style={[styles.greeting, { color: '#00A651' }]}>Welcome back</Text>
+          <TouchableOpacity onPress={() => router.push('/profile-edit' as any)}>
+            <Text style={[styles.userName, { color: theme.text }]}>{user?.name || 'User'}</Text>
+          </TouchableOpacity>
           <Text style={[styles.balance, { color: '#ED1C24' }]}>$100.00</Text>
           <Text style={[styles.balanceLabel, { color: theme.subtext }]}>TOP UP</Text>
         </View>

@@ -144,8 +144,10 @@ export default function BarberHomeScreen() {
       {/* Header */}
       <View style={styles.header}>
         <View>
-          <Text style={[styles.greeting, { color: '#00A651' }]}>Welcome Barber</Text>
-          <Text style={[styles.userName, { color: theme.text }]}>{user?.name || 'Barber'}</Text>
+          <Text style={[styles.greeting, { color: '#00A651' }]}>Welcome back</Text>
+          <TouchableOpacity onPress={() => router.push('/profile-edit' as any)}>
+            <Text style={[styles.userName, { color: theme.text }]}>{user?.name || 'Barber'}</Text>
+          </TouchableOpacity>
         </View>
         <TouchableOpacity 
           style={styles.logoutButtonHeader}

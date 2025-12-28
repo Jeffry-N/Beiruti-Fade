@@ -68,3 +68,12 @@ export const updateAppointmentDate = (appointmentId: number, appointmentDate: st
 
 export const updateAppointmentStatus = (appointmentId: number, status: 'confirmed' | 'completed' | 'cancelled') =>
   apiCall('/appointment', 'PUT', { appointmentId, status });
+
+export const updateProfile = (
+  id: number,
+  type: 'customer' | 'barber',
+  updates: { fullName?: string; email?: string; password?: string }
+) => apiCall('/profile', 'PUT', { id, type, ...updates });
+
+export const getProfile = (id: number, type: 'customer' | 'barber') =>
+  apiCall(`/profile?id=${id}&type=${type}`, 'GET');
