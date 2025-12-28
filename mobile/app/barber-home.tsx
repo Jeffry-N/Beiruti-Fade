@@ -118,7 +118,7 @@ export default function BarberHomeScreen() {
   if (isLoading) {
     return (
       <View style={styles.container}>
-        <ActivityIndicator size="large" color="#CCFF00" />
+        <ActivityIndicator size="large" color="#ED1C24" />
       </View>
     );
   }
@@ -264,7 +264,7 @@ export default function BarberHomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0D1117',
+    backgroundColor: '#FFFFFF',
     padding: 16,
   },
   header: {
@@ -275,12 +275,12 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   greeting: {
-    color: '#CCFF00',
+    color: '#00A651',
     fontSize: 14,
     fontWeight: '600',
   },
   userName: {
-    color: '#FFF',
+    color: '#1A1A1A',
     fontSize: 24,
     fontWeight: 'bold',
     marginTop: 4,
@@ -289,7 +289,7 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   menuDots: {
-    color: '#FFF',
+    color: '#1A1A1A',
     fontSize: 20,
   },
   statsContainer: {
@@ -299,20 +299,22 @@ const styles = StyleSheet.create({
   },
   statCard: {
     flex: 1,
-    backgroundColor: '#1A1A2E',
+    backgroundColor: '#F5F5F5',
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
     borderLeftWidth: 4,
-    borderLeftColor: '#CCFF00',
+    borderLeftColor: '#ED1C24',
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
   },
   statNumber: {
-    color: '#CCFF00',
+    color: '#ED1C24',
     fontSize: 28,
     fontWeight: 'bold',
   },
   statLabel: {
-    color: '#888',
+    color: '#666',
     fontSize: 12,
     marginTop: 6,
     fontWeight: '600',
@@ -321,27 +323,29 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   sectionTitle: {
-    color: '#FFF',
+    color: '#1A1A1A',
     fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 12,
   },
   emptyText: {
-    color: '#888',
+    color: '#666',
     fontSize: 14,
     textAlign: 'center',
     paddingVertical: 20,
   },
   appointmentCard: {
-    backgroundColor: '#1A1A2E',
+    backgroundColor: '#F5F5F5',
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
     borderLeftWidth: 4,
     borderLeftColor: '#FFB800',
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
   },
   confirmedCard: {
-    borderLeftColor: '#00D084',
+    borderLeftColor: '#00A651',
   },
   appointmentHeader: {
     flexDirection: 'row',
@@ -350,7 +354,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   serviceName: {
-    color: '#CCFF00',
+    color: '#ED1C24',
     fontSize: 16,
     fontWeight: 'bold',
   },
@@ -377,13 +381,13 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   detailLabel: {
-    color: '#888',
+    color: '#666',
     fontSize: 11,
     fontWeight: '600',
     marginBottom: 4,
   },
   detailValue: {
-    color: '#FFF',
+    color: '#1A1A1A',
     fontSize: 13,
     fontWeight: '500',
   },
@@ -393,13 +397,13 @@ const styles = StyleSheet.create({
   },
   acceptButton: {
     flex: 1,
-    backgroundColor: '#00D084',
+    backgroundColor: '#00A651',
     paddingVertical: 10,
     borderRadius: 6,
     alignItems: 'center',
   },
   acceptButtonText: {
-    color: '#000',
+    color: '#FFFFFF',
     fontWeight: 'bold',
     fontSize: 12,
   },
@@ -411,30 +415,30 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   rejectButtonText: {
-    color: '#FFF',
+    color: '#FFFFFF',
     fontWeight: 'bold',
     fontSize: 12,
   },
   completeButton: {
-    backgroundColor: '#CCFF00',
+    backgroundColor: '#ED1C24',
     paddingVertical: 10,
     borderRadius: 6,
     alignItems: 'center',
   },
   completeButtonText: {
-    color: '#000',
+    color: '#FFFFFF',
     fontWeight: 'bold',
     fontSize: 12,
   },
   logoutButton: {
-    borderWidth: 1,
-    borderColor: '#CCFF00',
+    borderWidth: 2,
+    borderColor: '#ED1C24',
     paddingVertical: 14,
     borderRadius: 8,
     alignItems: 'center',
   },
   logoutText: {
-    color: '#CCFF00',
+    color: '#ED1C24',
     fontWeight: 'bold',
     fontSize: 14,
   },

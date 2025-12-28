@@ -78,7 +78,7 @@ export default function LoginScreen() {
         disabled={isLoading}
       >
         <Text style={styles.roleText}>
-          Login as: <Text style={{color: '#CCFF00'}}>{isBarber ? 'BARBER' : 'CUSTOMER'}</Text>
+          Login as: <Text style={{color: '#00A651', fontWeight: '700'}}>{isBarber ? 'BARBER' : 'CUSTOMER'}</Text>
         </Text>
       </TouchableOpacity>
 
@@ -88,7 +88,7 @@ export default function LoginScreen() {
         disabled={isLoading}
       >
         {isLoading ? (
-          <ActivityIndicator size="small" color="#000" />
+          <ActivityIndicator size="small" color="#FFFFFF" />
         ) : (
           <Text style={styles.buttonText}>SIGN IN</Text>
         )}
@@ -99,7 +99,7 @@ export default function LoginScreen() {
         disabled={isLoading}
       >
         <Text style={styles.linkText}>
-          Don't have an account? <Text style={{color: '#CCFF00'}}>Sign Up</Text>
+          Don't have an account? <Text style={{color: '#00A651', fontWeight: '600'}}>Sign Up</Text>
         </Text>
       </TouchableOpacity>
     </View>
@@ -107,14 +107,14 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#000', justifyContent: 'center', padding: 30 },
-  logo: { color: '#CCFF00', fontSize: 36, fontWeight: '900', textAlign: 'center', marginBottom: 50 },
+  container: { flex: 1, backgroundColor: '#FFFFFF', justifyContent: 'center', padding: 30 },
+  logo: { color: '#ED1C24', fontSize: 36, fontWeight: '900', textAlign: 'center', marginBottom: 50 },
   inputContainer: { marginBottom: 20 },
-  input: { backgroundColor: '#1A1A1A', color: '#FFF', padding: 15, borderRadius: 8, marginBottom: 15, fontSize: 16 },
+  input: { backgroundColor: '#F5F5F5', color: '#1A1A1A', padding: 15, borderRadius: 8, marginBottom: 15, fontSize: 16, borderWidth: 1, borderColor: '#E0E0E0' },
   roleSelector: { alignItems: 'center', marginBottom: 25 },
-  roleText: { color: '#FFF', fontSize: 14, fontWeight: '600' },
-  button: { backgroundColor: '#CCFF00', padding: 18, borderRadius: 8, alignItems: 'center' },
+  roleText: { color: '#1A1A1A', fontSize: 14, fontWeight: '600' },
+  button: { backgroundColor: '#ED1C24', padding: 18, borderRadius: 8, alignItems: 'center', shadowColor: '#ED1C24', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.3, shadowRadius: 4, elevation: 5 },
   buttonDisabled: { opacity: 0.6 },
-  buttonText: { color: '#000', fontWeight: 'bold', fontSize: 16 },
+  buttonText: { color: '#FFFFFF', fontWeight: 'bold', fontSize: 16 },
   linkText: { color: '#666', textAlign: 'center', marginTop: 25, fontSize: 14 }
 });

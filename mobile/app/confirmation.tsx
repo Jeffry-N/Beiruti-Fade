@@ -119,7 +119,7 @@ export default function ConfirmationScreen() {
             disabled={isLoading}
           >
             {isLoading ? (
-              <ActivityIndicator size="small" color="#000" />
+              <ActivityIndicator size="small" color="#FFFFFF" />
             ) : (
               <Text style={styles.confirmButtonText}>CONFIRM</Text>
             )}
@@ -137,7 +137,7 @@ export default function ConfirmationScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0D1117',
+    backgroundColor: '#FFFFFF',
     padding: 16,
     justifyContent: 'center',
   },
@@ -145,17 +145,19 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   backText: {
-    color: '#CCFF00',
+    color: '#00A651',
     fontSize: 14,
     fontWeight: '600',
   },
   card: {
-    backgroundColor: '#1A1A2E',
+    backgroundColor: '#F5F5F5',
     borderRadius: 16,
     padding: 24,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
   },
   title: {
-    color: '#FFF',
+    color: '#1A1A1A',
     fontSize: 22,
     fontWeight: 'bold',
     marginBottom: 24,
@@ -171,12 +173,12 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   detailLabel: {
-    color: '#888',
+    color: '#666',
     fontSize: 13,
     fontWeight: '600',
   },
   detailValue: {
-    color: '#CCFF00',
+    color: '#00A651',
     fontSize: 14,
     fontWeight: '600',
     maxWidth: '50%',
@@ -184,7 +186,7 @@ const styles = StyleSheet.create({
   },
   divider: {
     height: 1,
-    backgroundColor: '#262641',
+    backgroundColor: '#E0E0E0',
   },
   buttonContainer: {
     flexDirection: 'row',
@@ -194,33 +196,38 @@ const styles = StyleSheet.create({
   editButton: {
     flex: 1,
     borderWidth: 2,
-    borderColor: '#CCFF00',
+    borderColor: '#00A651',
     paddingVertical: 14,
     borderRadius: 8,
     alignItems: 'center',
   },
   editButtonText: {
-    color: '#CCFF00',
+    color: '#00A651',
     fontWeight: 'bold',
     fontSize: 14,
   },
   confirmButton: {
     flex: 1,
-    backgroundColor: '#CCFF00',
+    backgroundColor: '#ED1C24',
     paddingVertical: 14,
     borderRadius: 8,
     alignItems: 'center',
+    shadowColor: '#ED1C24',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
   },
   confirmButtonDisabled: {
     opacity: 0.6,
   },
   confirmButtonText: {
-    color: '#000',
+    color: '#FFFFFF',
     fontWeight: 'bold',
     fontSize: 14,
   },
   disclaimer: {
-    color: '#888',
+    color: '#666',
     fontSize: 11,
     textAlign: 'center',
     fontStyle: 'italic',

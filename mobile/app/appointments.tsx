@@ -149,7 +149,7 @@ export default function AppointmentsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0D1117',
+    backgroundColor: '#FFFFFF',
   },
   header: {
     flexDirection: 'row',
@@ -159,12 +159,12 @@ const styles = StyleSheet.create({
     paddingTop: 20,
   },
   backText: {
-    color: '#CCFF00',
+    color: '#00A651',
     fontSize: 14,
     fontWeight: '600',
   },
   title: {
-    color: '#FFF',
+    color: '#1A1A1A',
     fontSize: 18,
     fontWeight: 'bold',
   },
@@ -179,26 +179,33 @@ const styles = StyleSheet.create({
     paddingVertical: 60,
   },
   emptyText: {
-    color: '#888',
+    color: '#666',
     fontSize: 16,
     marginBottom: 20,
   },
   bookButton: {
-    backgroundColor: '#CCFF00',
+    backgroundColor: '#ED1C24',
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 8,
+    shadowColor: '#ED1C24',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
   },
   bookButtonText: {
-    color: '#000',
+    color: '#FFFFFF',
     fontWeight: 'bold',
     fontSize: 14,
   },
   appointmentCard: {
-    backgroundColor: '#1A1A2E',
+    backgroundColor: '#F5F5F5',
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
   },
   appointmentHeader: {
     flexDirection: 'row',
@@ -207,7 +214,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   barberName: {
-    color: '#CCFF00',
+    color: '#ED1C24',
     fontSize: 16,
     fontWeight: 'bold',
   },
@@ -227,13 +234,13 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   detailLabel: {
-    color: '#888',
+    color: '#666',
     fontSize: 11,
     fontWeight: '600',
     marginBottom: 4,
   },
   detailValue: {
-    color: '#FFF',
+    color: '#1A1A1A',
     fontSize: 13,
     fontWeight: '500',
   },
@@ -243,13 +250,13 @@ const styles = StyleSheet.create({
   },
   actionButton: {
     flex: 1,
-    backgroundColor: '#CCFF00',
+    backgroundColor: '#00A651',
     paddingVertical: 10,
     borderRadius: 6,
     alignItems: 'center',
   },
   actionButtonText: {
-    color: '#000',
+    color: '#FFFFFF',
     fontWeight: 'bold',
     fontSize: 12,
   },

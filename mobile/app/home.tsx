@@ -66,7 +66,7 @@ export default function HomeScreen() {
   if (isLoading) {
     return (
       <View style={styles.container}>
-        <ActivityIndicator size="large" color="#CCFF00" />
+        <ActivityIndicator size="large" color="#ED1C24" />
       </View>
     );
   }
@@ -127,7 +127,7 @@ export default function HomeScreen() {
       {/* Load More */}
       <View style={styles.loadMoreContainer}>
         <Text style={styles.loadMore}>LOAD MORE</Text>
-        <Text style={{color: '#CCFF00', marginLeft: 5}}>→</Text>
+        <Text style={{color: '#00A651', marginLeft: 5}}>→</Text>
       </View>
 
       {/* Top Barbers */}
@@ -170,7 +170,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0D1117',
+    backgroundColor: '#FFFFFF',
     padding: 16,
   },
   header: {
@@ -181,24 +181,24 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   greeting: {
-    color: '#CCFF00',
+    color: '#00A651',
     fontSize: 14,
     fontWeight: '600',
   },
   userName: {
-    color: '#FFF',
+    color: '#1A1A1A',
     fontSize: 24,
     fontWeight: 'bold',
     marginTop: 4,
   },
   balance: {
-    color: '#CCFF00',
+    color: '#ED1C24',
     fontSize: 18,
     fontWeight: 'bold',
     marginTop: 12,
   },
   balanceLabel: {
-    color: '#888',
+    color: '#666',
     fontSize: 10,
     fontWeight: '600',
     marginTop: 4,
@@ -207,7 +207,7 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   menuDots: {
-    color: '#FFF',
+    color: '#1A1A1A',
     fontSize: 20,
   },
   tabsContainer: {
@@ -217,24 +217,24 @@ const styles = StyleSheet.create({
   tabActive: {
     paddingVertical: 8,
     paddingHorizontal: 16,
-    backgroundColor: '#CCFF00',
+    backgroundColor: '#ED1C24',
     borderRadius: 4,
     marginRight: 8,
   },
   tabTextActive: {
-    color: '#000',
+    color: '#FFFFFF',
     fontWeight: 'bold',
     fontSize: 12,
   },
   tab: {
     paddingVertical: 8,
     paddingHorizontal: 16,
-    backgroundColor: '#1A1A2E',
+    backgroundColor: '#F5F5F5',
     borderRadius: 4,
     marginRight: 8,
   },
   tabText: {
-    color: '#FFF',
+    color: '#1A1A1A',
     fontWeight: '600',
     fontSize: 12,
   },
@@ -244,16 +244,18 @@ const styles = StyleSheet.create({
   serviceCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1A1A2E',
+    backgroundColor: '#F5F5F5',
     borderRadius: 12,
     padding: 12,
     marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
   },
   serviceIcon: {
     width: 48,
     height: 48,
     borderRadius: 8,
-    backgroundColor: '#262641',
+    backgroundColor: '#00A651',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -265,12 +267,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   serviceName: {
-    color: '#FFF',
+    color: '#1A1A1A',
     fontWeight: 'bold',
     fontSize: 14,
   },
   serviceDesc: {
-    color: '#888',
+    color: '#666',
     fontSize: 11,
     marginTop: 4,
   },
@@ -278,12 +280,12 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#CCFF00',
+    backgroundColor: '#ED1C24',
     justifyContent: 'center',
     alignItems: 'center',
   },
   plusSign: {
-    color: '#000',
+    color: '#FFFFFF',
     fontWeight: 'bold',
     fontSize: 16,
   },
@@ -294,7 +296,7 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   loadMore: {
-    color: '#888',
+    color: '#666',
     fontSize: 12,
     fontWeight: '600',
   },
@@ -302,7 +304,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   sectionTitle: {
-    color: '#FFF',
+    color: '#1A1A1A',
     fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 12,
@@ -310,22 +312,24 @@ const styles = StyleSheet.create({
   barberCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1A1A2E',
+    backgroundColor: '#F5F5F5',
     borderRadius: 12,
     padding: 12,
     marginBottom: 10,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
   },
   barberAvatar: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#CCFF00',
+    backgroundColor: '#00A651',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
   },
   avatarText: {
-    color: '#000',
+    color: '#FFFFFF',
     fontWeight: 'bold',
     fontSize: 18,
   },
@@ -333,36 +337,41 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   barberName: {
-    color: '#FFF',
+    color: '#1A1A1A',
     fontWeight: 'bold',
     fontSize: 13,
   },
   barberBio: {
-    color: '#888',
+    color: '#666',
     fontSize: 11,
     marginTop: 2,
   },
   appointmentsButton: {
-    backgroundColor: '#CCFF00',
+    backgroundColor: '#ED1C24',
     paddingVertical: 14,
     borderRadius: 8,
     alignItems: 'center',
     marginBottom: 12,
+    shadowColor: '#ED1C24',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
   },
   appointmentsButtonText: {
-    color: '#000',
+    color: '#FFFFFF',
     fontWeight: 'bold',
     fontSize: 14,
   },
   logoutButton: {
-    borderWidth: 1,
-    borderColor: '#CCFF00',
+    borderWidth: 2,
+    borderColor: '#ED1C24',
     paddingVertical: 14,
     borderRadius: 8,
     alignItems: 'center',
   },
   logoutText: {
-    color: '#CCFF00',
+    color: '#ED1C24',
     fontWeight: 'bold',
     fontSize: 14,
   },

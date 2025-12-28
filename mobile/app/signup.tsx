@@ -11,7 +11,7 @@ export default function SignupScreen() {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isBarber, setIsBarber] = useState(false);
+  const isBarber = false; // Only customers can sign up
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSignup = async () => {
@@ -85,22 +85,12 @@ export default function SignupScreen() {
         />
 
         <TouchableOpacity 
-          style={styles.roleSelector} 
-          onPress={() => setIsBarber(!isBarber)}
-          disabled={isLoading}
-        >
-          <Text style={styles.roleText}>
-            Sign up as: <Text style={{color: '#CCFF00'}}>{isBarber ? 'BARBER' : 'CUSTOMER'}</Text>
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity 
           style={[styles.button, isLoading && styles.buttonDisabled]} 
           onPress={handleSignup}
           disabled={isLoading}
         >
           {isLoading ? (
-            <ActivityIndicator color="#000" />
+            <ActivityIndicator color="#FFFFFF" />
           ) : (
             <Text style={styles.buttonText}>REGISTER NOW</Text>
           )}
@@ -119,7 +109,7 @@ export default function SignupScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000',
+    backgroundColor: '#FFFFFF',
     padding: 30,
     justifyContent: 'center',
   },
@@ -127,13 +117,13 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   title: {
-    color: '#CCFF00',
+    color: '#ED1C24',
     fontSize: 32,
     fontWeight: '900',
     textAlign: 'left',
   },
   subtitle: {
-    color: '#888',
+    color: '#666',
     fontSize: 16,
     marginTop: 5,
   },
@@ -141,14 +131,14 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   input: {
-    backgroundColor: '#1A1A1A',
-    color: '#FFF',
+    backgroundColor: '#F5F5F5',
+    color: '#1A1A1A',
     padding: 18,
     borderRadius: 12,
     marginBottom: 15,
     fontSize: 16,
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: '#E0E0E0',
   },
   roleSelector: {
     alignItems: 'center',
@@ -156,17 +146,17 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   roleText: {
-    color: '#FFF',
+    color: '#1A1A1A',
     fontSize: 14,
     fontWeight: '600',
   },
   button: {
-    backgroundColor: '#CCFF00',
+    backgroundColor: '#ED1C24',
     padding: 18,
     borderRadius: 12,
     alignItems: 'center',
     marginTop: 10,
-    shadowColor: '#CCFF00',
+    shadowColor: '#ED1C24',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 5,
@@ -176,18 +166,18 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   buttonText: {
-    color: '#000',
+    color: '#FFFFFF',
     fontWeight: 'bold',
     fontSize: 18,
   },
   linkText: {
-    color: '#888',
+    color: '#666',
     textAlign: 'center',
     marginTop: 30,
     fontSize: 14,
   },
   limeText: {
-    color: '#CCFF00',
+    color: '#00A651',
     fontWeight: 'bold',
   },
 });
