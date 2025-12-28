@@ -23,18 +23,21 @@ export default function ThemeModal({
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
   const theme = {
-    bg: isDark ? '#1A1A1A' : '#FFFFFF',
+    bg: isDark ? '#0F0F0F' : '#FFFFFF',
     text: isDark ? '#FFFFFF' : '#1A1A1A',
-    subtext: isDark ? '#AAA' : '#666',
-    modalBg: isDark ? '#2A2A2A' : '#F5F5F5',
-    border: isDark ? '#3A3A3A' : '#E0E0E0',
+    subtext: isDark ? '#B5B5B5' : '#666',
+    modalBg: isDark ? '#1E1E1E' : '#F7F7F7',
+    border: isDark ? '#2F2F2F' : '#E0E0E0',
+    primary: '#ED1C24',
+    destructive: '#FF4D4F',
   };
 
   const handleButtonPress = (onPress?: () => void) => {
+    // Close first so UX is snappy even if onPress is async
+    if (onDismiss) onDismiss();
     if (onPress) {
       onPress();
     }
-    if (onDismiss) onDismiss();
   };
 
   return (
@@ -49,38 +52,43 @@ export default function ThemeModal({
           <Text style={[styles.title, { color: theme.text }]}>{title}</Text>
           <Text style={[styles.message, { color: theme.subtext }]}>{message}</Text>
 
-          <View style={styles.buttonContainer}>
-            {buttons.map((button, index) => (
-              <TouchableOpacity
-                key={index}
-                style={[
-                  styles.button,
-                  {
-                    borderColor: theme.border,
-                    borderTopWidth: index > 0 ? 1 : 0,
-                    flex: 1,
-                  },
-                  button.style === 'destructive' && styles.destructiveButton,
-                ]}
-                onPress={() => handleButtonPress(button.onPress)}
-              >
-                <Text
+          <View style={[styles.buttonContainer, { backgroundColor: theme.modalBg, borderColor: theme.border }] }>
+            {buttons.map((button, index) => {
+              const isDestructive = button.style === 'destructive';
+              const isCancel = button.style === 'cancel';
+              const isPrimary = !isDestructive && !isCancel;
+
+              return (
+                <TouchableOpacity
+                  key={index}
+                  activeOpacity={0.8}
                   style={[
-                    styles.buttonText,
+                    styles.button,
                     {
-                      color:
-                        button.style === 'destructive'
-                          ? '#FF4444'
-                          : button.style === 'cancel'
-                            ? theme.text
-                            : '#ED1C24',
+                      borderTopWidth: index > 0 ? 1 : 0,
+                      borderColor: theme.border,
+                      backgroundColor: isPrimary ? theme.primary : theme.modalBg,
                     },
                   ]}
+                  onPress={() => handleButtonPress(button.onPress)}
                 >
-                  {button.text}
-                </Text>
-              </TouchableOpacity>
-            ))}
+                  <Text
+                    style={[
+                      styles.buttonText,
+                      {
+                        color: isDestructive
+                          ? theme.destructive
+                          : isCancel
+                            ? theme.subtext
+                            : '#FFFFFF',
+                      },
+                    ]}
+                  >
+                    {button.text}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
           </View>
         </View>
       </View>
@@ -118,14 +126,17 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     flexDirection: 'column',
-    borderRadius: 8,
+    borderRadius: 10,
     overflow: 'hidden',
+    width: '100%',
+    borderWidth: 1,
   },
   button: {
     paddingVertical: 12,
     paddingHorizontal: 16,
     justifyContent: 'center',
     alignItems: 'center',
+    width: '100%',
   },
   destructiveButton: {
     backgroundColor: 'transparent',
