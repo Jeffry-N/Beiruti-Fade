@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, useColorScheme } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, useColorScheme, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { login } from '../api';
 import ThemeModal from '../components/ThemeModal';
+
+const logo = require('../assets/images/beiruti-logo.png');
 import { useThemeAlert } from '../hooks/useThemeAlert';
 
 interface LoginResponse {
@@ -66,11 +68,7 @@ export default function LoginScreen() {
     <View style={[styles.container, { backgroundColor: theme.bg }]}>
       {/* Logo */}
       <View style={styles.logoContainer}>
-        <View style={styles.logoIconBox}>
-          <Text style={styles.logoIcon}>💈</Text>
-        </View>
-        <Text style={styles.logoText}>BEIRUTI</Text>
-        <Text style={styles.logoTextSecondary}>FADE</Text>
+        <Image source={logo} style={styles.logoImage} resizeMode="contain" />
       </View>
       
       <View style={styles.inputContainer}>
@@ -142,39 +140,7 @@ const styles = StyleSheet.create({
     alignItems: 'center', 
     marginBottom: 50 
   },
-  logoIconBox: {
-    width: 80,
-    height: 80,
-    backgroundColor: '#ED1C24',
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 15,
-    shadowColor: '#ED1C24',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 8,
-  },
-  logoIcon: {
-    fontSize: 40,
-  },
-  logoText: { 
-    color: '#ED1C24', 
-    fontSize: 36, 
-    fontWeight: '900', 
-    letterSpacing: 2,
-    textAlign: 'center' 
-  },
-  logoTextSecondary: { 
-    color: '#00A651', 
-    fontSize: 32, 
-    fontWeight: '700', 
-    letterSpacing: 4,
-    textAlign: 'center',
-    marginTop: -5,
-  },
-  logo: { color: '#ED1C24', fontSize: 36, fontWeight: '900', textAlign: 'center', marginBottom: 50 },
+  logoImage: { width: 220, height: 220 },
   inputContainer: { marginBottom: 20 },
   input: { backgroundColor: '#F5F5F5', color: '#1A1A1A', padding: 15, borderRadius: 8, marginBottom: 15, fontSize: 16, borderWidth: 1, borderColor: '#E0E0E0' },
   roleSelector: { alignItems: 'center', marginBottom: 25 },

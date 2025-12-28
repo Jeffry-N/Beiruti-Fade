@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, useColorScheme } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, useColorScheme, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { signup } from '../api';
 import ThemeModal from '../components/ThemeModal';
+
+const logo = require('../assets/images/beiruti-logo.png');
 import { useThemeAlert } from '../hooks/useThemeAlert';
 
 export default function SignupScreen() {
@@ -15,6 +17,7 @@ export default function SignupScreen() {
     input: isDark ? '#2A2A2A' : '#F5F5F5',
     inputBorder: isDark ? '#3A3A3A' : '#E0E0E0',
     placeholder: isDark ? '#888' : '#666',
+    subtext: isDark ? '#AAA' : '#666',
   };
   
   const router = useRouter();
@@ -56,20 +59,14 @@ export default function SignupScreen() {
     <View style={[styles.container, { backgroundColor: theme.bg }]}>
       {/* Logo */}
       <View style={styles.logoContainer}>
-        <View style={styles.logoIconBox}>
-          <Text style={styles.logoIcon}>💈</Text>
-        </View>
-        <Text style={styles.logoText}>BEIRUTI</Text>
-        <Text style={styles.logoTextSecondary}>FADE</Text>
+        <Image source={logo} style={styles.logoImage} resizeMode="contain" />
       </View>
-
-      <Text style={styles.signupTitle}>Create Your Account</Text>
 
       <View style={styles.form}>
         <TextInput 
           placeholder="Full Name" 
-          placeholderTextColor="#666" 
-          style={styles.input} 
+          placeholderTextColor={theme.placeholder} 
+          style={[styles.input, { backgroundColor: theme.input, color: theme.text, borderColor: theme.inputBorder }]} 
           onChangeText={setFullName}
           value={fullName}
           editable={!isLoading}
@@ -77,8 +74,8 @@ export default function SignupScreen() {
         />
         <TextInput 
           placeholder="Email" 
-          placeholderTextColor="#666" 
-          style={styles.input}
+          placeholderTextColor={theme.placeholder} 
+          style={[styles.input, { backgroundColor: theme.input, color: theme.text, borderColor: theme.inputBorder }]}
           keyboardType="email-address"
           onChangeText={setEmail}
           value={email}
@@ -87,8 +84,8 @@ export default function SignupScreen() {
         />
         <TextInput 
           placeholder="Username" 
-          placeholderTextColor="#666" 
-          style={styles.input} 
+          placeholderTextColor={theme.placeholder} 
+          style={[styles.input, { backgroundColor: theme.input, color: theme.text, borderColor: theme.inputBorder }]} 
           autoCapitalize="none"
           onChangeText={setUsername}
           value={username}
@@ -96,9 +93,9 @@ export default function SignupScreen() {
         />
         <TextInput 
           placeholder="Password" 
-          placeholderTextColor="#666" 
+          placeholderTextColor={theme.placeholder} 
           secureTextEntry 
-          style={styles.input} 
+          style={[styles.input, { backgroundColor: theme.input, color: theme.text, borderColor: theme.inputBorder }]} 
           onChangeText={setPassword}
           value={password}
           editable={!isLoading}
@@ -118,7 +115,7 @@ export default function SignupScreen() {
       </View>
 
       <TouchableOpacity onPress={() => router.push('/')} disabled={isLoading}>
-        <Text style={styles.linkText}>
+        <Text style={[styles.linkText, { color: theme.subtext }]}>
           Already have an account? <Text style={styles.limeText}>Sign In</Text>
         </Text>
       </TouchableOpacity>
@@ -145,38 +142,7 @@ const styles = StyleSheet.create({
     alignItems: 'center', 
     marginBottom: 30 
   },
-  logoIconBox: {
-    width: 70,
-    height: 70,
-    backgroundColor: '#ED1C24',
-    borderRadius: 18,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 12,
-    shadowColor: '#ED1C24',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 8,
-  },
-  logoIcon: {
-    fontSize: 35,
-  },
-  logoText: { 
-    color: '#ED1C24', 
-    fontSize: 30, 
-    fontWeight: '900', 
-    letterSpacing: 2,
-    textAlign: 'center' 
-  },
-  logoTextSecondary: { 
-    color: '#00A651', 
-    fontSize: 26, 
-    fontWeight: '700', 
-    letterSpacing: 4,
-    textAlign: 'center',
-    marginTop: -5,
-  },
+  logoImage: { width: 200, height: 200 },
   signupTitle: {
     color: '#1A1A1A',
     fontSize: 20,
