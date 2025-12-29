@@ -45,25 +45,27 @@ export default function ConfirmationScreen() {
       // If this is a reschedule, update the existing appointment(s)
       if (reschedule === 'true' && appointmentIds) {
         const appointmentIdArray = String(appointmentIds).split(',').map(id => Number(id));
-        
-        // Update all appointments in the group
-        for (const aptId of appointmentIdArray) {
-          const result = await updateAppointmentDate(
-            aptId,
-            String(date),
-            String(time)
-          );
-          
-          if (!result.success) {
-            throw new Error(result.error || 'Failed to reschedule appointment');
-          }
+        const serviceIdArray = String(serviceIds).split(',').map(id => Number(id));
+
+        const { rescheduleAppointmentServices } = require('../api');
+        const result = await rescheduleAppointmentServices(
+          appointmentIdArray,
+          user.id,
+          Number(barberId),
+          serviceIdArray,
+          String(date),
+          String(time)
+        );
+
+        if (!result.success) {
+          throw new Error(result.error || 'Failed to reschedule appointment');
         }
-        
+
         setIsLoading(false);
-        alert('Success', 'Appointment rescheduled successfully!', [
+        alert('Success', 'Appointment rescheduled and awaiting barber confirmation', [
           {
             text: 'OK',
-            onPress: () => router.replace('/appointments' as any),
+            onPress: () => router.replace('/home' as any),
           },
         ]);
       } else {
@@ -117,7 +119,13 @@ export default function ConfirmationScreen() {
     <>
     <View style={[styles.container, { backgroundColor: theme.bg }]}>
       {/* Header */}
-      <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+      <TouchableOpacity onPress={() => {
+        if (reschedule === 'true') {
+          router.replace('/home' as any);
+        } else {
+          router.back();
+        }
+      }} style={styles.backButton}>
         <Text style={[styles.backText, { color: '#00A651' }]}>← Back</Text>
       </TouchableOpacity>
 

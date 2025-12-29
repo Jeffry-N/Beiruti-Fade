@@ -72,6 +72,23 @@ export const updateAppointmentDate = (appointmentId: number, appointmentDate: st
 export const updateAppointmentStatus = (appointmentId: number, status: 'confirmed' | 'completed' | 'cancelled') =>
   apiCall('/appointment', 'PUT', { appointmentId, status });
 
+export const rescheduleAppointmentServices = (
+  appointmentIds: number[],
+  customerId: number,
+  barberId: number,
+  serviceIds: number[],
+  appointmentDate: string,
+  appointmentTime: string
+) =>
+  apiCall('/appointment/reschedule-services', 'PUT', {
+    appointmentIds: appointmentIds.join(','),
+    customerId,
+    barberId,
+    serviceIds: serviceIds.join(','),
+    appointmentDate,
+    appointmentTime,
+  });
+
 export const updateProfile = (
   id: number,
   type: 'customer' | 'barber',

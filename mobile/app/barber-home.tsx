@@ -52,11 +52,13 @@ export default function BarberHomeScreen() {
           const result = await getBarberAppointments(parsedUser.id);
           if (result.success && Array.isArray(result.data)) {
             const raw = result.data as any[];
-            // Group by customerId + date + time
+            // Only consider active appointments (pending or confirmed)
+            const active = raw.filter((item) => item.status === 'pending' || item.status === 'confirmed');
+            // Group by customerId + date + time + status to avoid mixing old confirmed with new pending
             const map = new Map<string, Appointment>();
-            for (const item of raw) {
+            for (const item of active) {
               const customerId = Number(item.customerId || 0);
-              const key = `${customerId}-${item.date}-${item.time}`;
+              const key = `${customerId}-${item.date}-${item.time}-${item.status}`;
               const apt: Appointment = {
                 id: item.id,
                 barberName: item.barberName,
@@ -437,7 +439,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   confirmedBadge: {
-    backgroundColor: '#00D084',
+    backgroundColor: '#00A651',
   },
   statusText: {
     color: '#000',
@@ -445,7 +447,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   confirmedStatusText: {
-    color: '#000',
+    color: '#FFF',
     fontSize: 10,
     fontWeight: 'bold',
   },

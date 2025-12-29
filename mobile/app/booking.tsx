@@ -146,7 +146,13 @@ export default function BookingScreen() {
     <>
     <ScrollView style={[styles.container, { backgroundColor: theme.bg }]} showsVerticalScrollIndicator={false}>
       {/* Header */}
-      <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+      <TouchableOpacity onPress={() => {
+        if (reschedule === 'true') {
+          router.replace('/home' as any);
+        } else {
+          router.back();
+        }
+      }} style={styles.backButton}>
         <Text style={[styles.backText, { color: '#00A651' }]}>← Back</Text>
       </TouchableOpacity>
 

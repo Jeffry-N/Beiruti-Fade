@@ -8,6 +8,7 @@ import { useThemeAlert } from '../hooks/useThemeAlert';
 
 interface Appointment {
   id: number;
+  barberId: number;
   barberName: string;
   serviceName: string;
   date: string;
@@ -42,31 +43,45 @@ export default function AppointmentsScreen() {
 
         const result = await getAppointments(parsedUser.id);
         if (result.success && Array.isArray(result.data)) {
-          // Filter out cancelled appointments
-          const activeAppointments = (result.data as Appointment[]).filter(
-            apt => apt.status !== 'cancelled' && apt.status !== 'completed'
-          );
-          
-          // Group appointments by barber, date, and time
-          const appointmentMap = new Map<string, any>();
-          
-          activeAppointments.forEach((apt) => {
-            const key = `${apt.barberName}-${apt.date}-${apt.time}`;
-            
-            if (appointmentMap.has(key)) {
-              // Merge service names
-              const existing = appointmentMap.get(key);
-              existing.serviceName = existing.serviceName + ', ' + apt.serviceName;
-              existing.allAppointments = [...(existing.allAppointments || [apt]), apt];
+          const raw = result.data as any[];
+          // Filter out cancelled or completed
+          const active = raw.filter(apt => apt.status !== 'cancelled' && apt.status !== 'completed');
+          // Group by barberId + date + time + status to avoid mixing different states
+          const map = new Map<string, Appointment>();
+          for (const apt of active) {
+            const key = `${apt.barberId}-${apt.date}-${apt.time}-${apt.status}`;
+            const item: Appointment = {
+              id: apt.id,
+              barberId: Number(apt.barberId || 0),
+              barberName: apt.barberName,
+              serviceName: apt.serviceName,
+              date: apt.date,
+              time: apt.time,
+              status: apt.status,
+              allAppointments: [{
+                id: apt.id,
+                barberId: Number(apt.barberId || 0),
+                barberName: apt.barberName,
+                serviceName: apt.serviceName,
+                date: apt.date,
+                time: apt.time,
+                status: apt.status,
+              } as Appointment]
+            };
+            if (map.has(key)) {
+              const existing = map.get(key)!;
+              // Merge unique service names only
+              const names = new Set((existing.serviceName + ', ' + item.serviceName).split(', ').filter(Boolean));
+              existing.serviceName = Array.from(names).join(', ');
+              existing.allAppointments = [
+                ...(existing.allAppointments || []),
+                ...item.allAppointments!
+              ];
             } else {
-              appointmentMap.set(key, {
-                ...apt,
-                allAppointments: [apt]
-              });
+              map.set(key, item);
             }
-          });
-          
-          setAppointments(Array.from(appointmentMap.values()));
+          }
+          setAppointments(Array.from(map.values()));
         }
       }
       setIsLoading(false);
@@ -96,7 +111,7 @@ export default function AppointmentsScreen() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'confirmed':
-        return '#CCFF00';
+        return '#00A651';
       case 'pending':
         return '#FFB800';
       case 'completed':
@@ -182,7 +197,7 @@ export default function AppointmentsScreen() {
                       params: { 
                         appointmentIds: allIds,
                         reschedule: 'true',
-                        barberId: appointment.barberName,
+                        barberId: String(appointment.barberId),
                         date: appointment.date,
                         time: appointment.time
                       }
@@ -232,6 +247,8 @@ export default function AppointmentsScreen() {
         <View style={{ height: 20 }} />
       </ScrollView>
 
+      
+
       <ThemeModal
         visible={visible}
         title={config.title}
@@ -268,6 +285,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 16,
   },
+  
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -361,4 +379,5 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 12,
   },
+  
 });

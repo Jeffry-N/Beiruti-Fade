@@ -108,14 +108,71 @@ public class AppointmentHandler implements HttpHandler {
             InputStream is = exchange.getRequestBody();
             String body = new String(is.readAllBytes(), StandardCharsets.UTF_8);
 
-            if (path.contains("/reschedule")) {
+            if (path.contains("/reschedule-services")) {
+                // Batch reschedule: cancel old appointments and create new ones for selected services
+                String appointmentIdsStr = getValue(body, "appointmentIds");
+                String serviceIdsStr = getValue(body, "serviceIds");
+                int customerId = Integer.parseInt(getValue(body, "customerId"));
+                int barberId = Integer.parseInt(getValue(body, "barberId"));
+                String appointmentDate = getValue(body, "appointmentDate");
+                String appointmentTime = getValue(body, "appointmentTime");
+
+                try (Connection conn = db.getConnection()) {
+                    conn.setAutoCommit(false);
+                    try {
+                        // Cancel existing appointments
+                        if (appointmentIdsStr != null && !appointmentIdsStr.isEmpty()) {
+                            String[] ids = appointmentIdsStr.split(",");
+                            String cancelSql = "UPDATE appointment SET Status = 'cancelled' WHERE Id = ?";
+                            PreparedStatement cancelStmt = conn.prepareStatement(cancelSql);
+                            for (String idStr : ids) {
+                                int id = Integer.parseInt(idStr.trim());
+                                cancelStmt.setInt(1, id);
+                                cancelStmt.addBatch();
+                            }
+                            cancelStmt.executeBatch();
+                            cancelStmt.close();
+                        }
+
+                        // Insert new services for the new slot
+                        if (serviceIdsStr != null && !serviceIdsStr.isEmpty()) {
+                            String[] sids = serviceIdsStr.split(",");
+                            String insertSql = "INSERT INTO appointment (CustomerId, BarberId, ServiceId, AppointmentDate, AppointmentTime, Status) VALUES (?, ?, ?, ?, ?, 'pending')";
+                            PreparedStatement insertStmt = conn.prepareStatement(insertSql);
+                            for (String sidStr : sids) {
+                                int sid = Integer.parseInt(sidStr.trim());
+                                insertStmt.setInt(1, customerId);
+                                insertStmt.setInt(2, barberId);
+                                insertStmt.setInt(3, sid);
+                                insertStmt.setString(4, appointmentDate);
+                                insertStmt.setString(5, appointmentTime);
+                                insertStmt.addBatch();
+                            }
+                            insertStmt.executeBatch();
+                            insertStmt.close();
+                        }
+
+                        conn.commit();
+                        String response = "{\"success\": true, \"message\": \"Appointments rescheduled and set to pending\"}";
+                        sendResponse(exchange, 200, response);
+                    } catch (Exception inner) {
+                        conn.rollback();
+                        sendResponse(exchange, 500, "{\"error\": \"Server error: " + inner.getMessage() + "\"}");
+                    } finally {
+                        conn.setAutoCommit(true);
+                    }
+                } catch (Exception e) {
+                    sendResponse(exchange, 500, "{\"error\": \"Server error: " + e.getMessage() + "\"}");
+                }
+            } else if (path.contains("/reschedule")) {
                 // Reschedule appointment - update date and time
                 int appointmentId = Integer.parseInt(getValue(body, "appointmentId"));
                 String appointmentDate = getValue(body, "appointmentDate");
                 String appointmentTime = getValue(body, "appointmentTime");
 
                 try (Connection conn = db.getConnection()) {
-                    String sql = "UPDATE appointment SET AppointmentDate = ?, AppointmentTime = ? WHERE Id = ?";
+                    // When rescheduling, reset status to 'pending' so barber must re-accept
+                    String sql = "UPDATE appointment SET AppointmentDate = ?, AppointmentTime = ?, Status = 'pending' WHERE Id = ?";
                     PreparedStatement pstmt = conn.prepareStatement(sql);
                     pstmt.setString(1, appointmentDate);
                     pstmt.setString(2, appointmentTime);
@@ -124,7 +181,7 @@ public class AppointmentHandler implements HttpHandler {
                     int rowsUpdated = pstmt.executeUpdate();
                     
                     if (rowsUpdated > 0) {
-                        String response = "{\"success\": true, \"message\": \"Appointment rescheduled successfully\"}";
+                        String response = "{\"success\": true, \"message\": \"Appointment rescheduled and set to pending\"}";
                         sendResponse(exchange, 200, response);
                     } else {
                         sendResponse(exchange, 404, "{\"error\": \"Appointment not found\"}");
