@@ -65,12 +65,12 @@ public class AppointmentHandler implements HttpHandler {
                 
                 if (barberId > 0) {
                     // Get appointments for a barber
-                    sql = "SELECT a.Id, a.CustomerId, c.FullName as CustomerName, b.FullName as BarberName, s.Name as ServiceName, a.AppointmentDate, a.AppointmentTime, a.Status FROM appointment a JOIN barber b ON a.BarberId = b.Id JOIN customer c ON a.CustomerId = c.Id JOIN service s ON a.ServiceId = s.Id WHERE a.BarberId = ? ORDER BY a.AppointmentDate DESC";
+                    sql = "SELECT a.Id, a.BarberId, a.CustomerId, c.FullName as CustomerName, b.FullName as BarberName, s.Name as ServiceName, a.AppointmentDate, a.AppointmentTime, a.Status FROM appointment a JOIN barber b ON a.BarberId = b.Id JOIN customer c ON a.CustomerId = c.Id JOIN service s ON a.ServiceId = s.Id WHERE a.BarberId = ? ORDER BY a.AppointmentDate DESC";
                     pstmt = conn.prepareStatement(sql);
                     pstmt.setInt(1, barberId);
                 } else {
                     // Get appointments for a customer
-                    sql = "SELECT a.Id, a.CustomerId, b.FullName as BarberName, s.Name as ServiceName, a.AppointmentDate, a.AppointmentTime, a.Status FROM appointment a JOIN barber b ON a.BarberId = b.Id JOIN service s ON a.ServiceId = s.Id WHERE a.CustomerId = ? ORDER BY a.AppointmentDate DESC";
+                    sql = "SELECT a.Id, a.BarberId, a.CustomerId, c.FullName as CustomerName, b.FullName as BarberName, s.Name as ServiceName, a.AppointmentDate, a.AppointmentTime, a.Status FROM appointment a JOIN barber b ON a.BarberId = b.Id JOIN customer c ON a.CustomerId = c.Id JOIN service s ON a.ServiceId = s.Id WHERE a.CustomerId = ? ORDER BY a.AppointmentDate DESC";
                     pstmt = conn.prepareStatement(sql);
                     pstmt.setInt(1, customerId);
                 }
@@ -83,9 +83,11 @@ public class AppointmentHandler implements HttpHandler {
                 while (rs.next()) {
                     if (!first) jsonArray.append(",");
                     jsonArray.append(String.format(
-                        "{\"id\": %d, \"barberId\": %d, \"barberName\": \"%s\", \"serviceName\": \"%s\", \"date\": \"%s\", \"time\": \"%s\", \"status\": \"%s\"}",
+                        "{\"id\": %d, \"customerId\": %d, \"barberId\": %d, \"customerName\": \"%s\", \"barberName\": \"%s\", \"serviceName\": \"%s\", \"date\": \"%s\", \"time\": \"%s\", \"status\": \"%s\"}",
                         rs.getInt("Id"),
                         rs.getInt("CustomerId"),
+                        rs.getInt("BarberId"),
+                        rs.getString("CustomerName") == null ? "" : rs.getString("CustomerName"),
                         rs.getString("BarberName"),
                         rs.getString("ServiceName"),
                         rs.getString("AppointmentDate"),

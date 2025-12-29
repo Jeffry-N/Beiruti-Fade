@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator, useColorScheme } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { getAppointments, updateAppointmentStatus } from '../api';
+import { getBarberAppointments, updateAppointmentStatus } from '../api';
 import ThemeModal from '../components/ThemeModal';
 import { useThemeAlert } from '../hooks/useThemeAlert';
 
@@ -14,6 +14,10 @@ interface Appointment {
   date: string;
   time: string;
   status: string;
+  allAppointments?: Appointment[];
+  // API currently returns `barberId` that actually contains CustomerId for barber queries
+  // We'll accept an optional field to help grouping without backend change
+  customerId?: number;
 }
 interface User {
   id: number;
@@ -45,10 +49,38 @@ export default function BarberHomeScreen() {
         const parsedUser: User = JSON.parse(userData);
         setUser(parsedUser);
 
-        const result = await getAppointments(parsedUser.id);
-        if (result.success && Array.isArray(result.data)) {
-          setAppointments(result.data as Appointment[]);
-        }
+          const result = await getBarberAppointments(parsedUser.id);
+          if (result.success && Array.isArray(result.data)) {
+            const raw = result.data as any[];
+            // Group by customerId + date + time
+            const map = new Map<string, Appointment>();
+            for (const item of raw) {
+              const customerId = Number(item.customerId || 0);
+              const key = `${customerId}-${item.date}-${item.time}`;
+              const apt: Appointment = {
+                id: item.id,
+                barberName: item.barberName,
+                customerName: item.customerName,
+                serviceName: item.serviceName,
+                date: item.date,
+                time: item.time,
+                status: item.status,
+                customerId,
+              };
+              if (map.has(key)) {
+                const existing = map.get(key)!;
+                existing.serviceName = existing.serviceName + ', ' + apt.serviceName;
+                existing.allAppointments = [...(existing.allAppointments || [existing]), apt];
+                // Prefer a consolidated status: if any pending, show pending; else if any confirmed, show confirmed; else completed/cancelled
+                const statuses = new Set([existing.status, apt.status]);
+                if (statuses.has('pending')) existing.status = 'pending';
+                else if (statuses.has('confirmed')) existing.status = 'confirmed';
+              } else {
+                map.set(key, { ...apt, allAppointments: [apt] });
+              }
+            }
+            setAppointments(Array.from(map.values()));
+          }
       }
     } catch (error) {
       alert('Error', 'Failed to load appointments');
@@ -82,19 +114,21 @@ export default function BarberHomeScreen() {
   const getConfirmedAppointments = () => appointments.filter(a => a.status === 'confirmed');
   const getCompletedAppointments = () => appointments.filter(a => a.status === 'completed');
 
-  const handleAccept = (appointmentId: number) => {
+  const handleAccept = (appointmentId: number, group?: Appointment[]) => {
     alert('Accept Appointment', 'Mark this as confirmed?', [
       { text: 'Cancel', style: 'cancel', onPress: () => {} },
       {
         text: 'Confirm',
         onPress: async () => {
           try {
-            const result = await updateAppointmentStatus(appointmentId, 'confirmed');
-            if (result.success) {
+            const targets = group && group.length ? group : [{ id: appointmentId } as Appointment];
+            for (const apt of targets) {
+              const result = await updateAppointmentStatus(apt.id, 'confirmed');
+              if (!result.success) throw new Error(result.error || 'Failed to update appointment');
+            }
+            {
               alert('Success', 'Appointment confirmed!');
               loadAppointments();
-            } else {
-              alert('Error', result.error || 'Failed to update appointment');
             }
           } catch (error) {
             alert('Error', 'Network error. Please try again.');
@@ -104,7 +138,7 @@ export default function BarberHomeScreen() {
     ]);
   };
 
-  const handleReject = (appointmentId: number) => {
+  const handleReject = (appointmentId: number, group?: Appointment[]) => {
     alert('Cancel Appointment', 'Are you sure?', [
       { text: 'No', style: 'cancel', onPress: () => {} },
       {
@@ -112,12 +146,14 @@ export default function BarberHomeScreen() {
         style: 'destructive',
         onPress: async () => {
           try {
-            const result = await updateAppointmentStatus(appointmentId, 'cancelled');
-            if (result.success) {
+            const targets = group && group.length ? group : [{ id: appointmentId } as Appointment];
+            for (const apt of targets) {
+              const result = await updateAppointmentStatus(apt.id, 'cancelled');
+              if (!result.success) throw new Error(result.error || 'Failed to update appointment');
+            }
+            {
               alert('Success', 'Appointment cancelled');
               loadAppointments();
-            } else {
-              alert('Error', result.error || 'Failed to update appointment');
             }
           } catch (error) {
             alert('Error', 'Network error. Please try again.');
@@ -195,13 +231,13 @@ export default function BarberHomeScreen() {
               <View style={styles.appointmentActions}>
                 <TouchableOpacity 
                   style={styles.acceptButton}
-                  onPress={() => handleAccept(appointment.id)}
+                  onPress={() => handleAccept(appointment.id, appointment.allAppointments)}
                 >
                   <Text style={styles.acceptButtonText}>Accept</Text>
                 </TouchableOpacity>
                 <TouchableOpacity 
                   style={styles.rejectButton}
-                  onPress={() => handleReject(appointment.id)}
+                  onPress={() => handleReject(appointment.id, appointment.allAppointments)}
                 >
                   <Text style={styles.rejectButtonText}>Reject</Text>
                 </TouchableOpacity>
@@ -242,12 +278,14 @@ export default function BarberHomeScreen() {
                       text: 'Complete',
                       onPress: async () => {
                         try {
-                          const result = await updateAppointmentStatus(appointment.id, 'completed');
-                          if (result.success) {
+                          const targets = appointment.allAppointments && appointment.allAppointments.length ? appointment.allAppointments : [appointment];
+                          for (const apt of targets) {
+                            const result = await updateAppointmentStatus(apt.id, 'completed');
+                            if (!result.success) throw new Error(result.error || 'Failed to update appointment');
+                          }
+                          {
                             alert('Done', 'Appointment marked as completed');
                             loadAppointments();
-                          } else {
-                            alert('Error', result.error || 'Failed to update appointment');
                           }
                         } catch (error) {
                           alert('Error', 'Network error. Please try again.');

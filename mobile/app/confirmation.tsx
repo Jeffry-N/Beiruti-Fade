@@ -70,7 +70,7 @@ export default function ConfirmationScreen() {
         // Otherwise, book new appointments
         const serviceIdArray = String(serviceIds).split(',').map(id => Number(id));
         
-        // Book all services sequentially
+        // Book all selected services for the same slot; treated as one logical appointment
         for (const serviceId of serviceIdArray) {
           const result = await bookAppointment(
             user.id,
@@ -79,14 +79,13 @@ export default function ConfirmationScreen() {
             String(date),
             String(time)
           );
-          
           if (!result.success) {
             throw new Error(result.error || 'Failed to book one or more services');
           }
         }
         
         setIsLoading(false);
-        alert('Success', `${serviceIdArray.length} appointment${serviceIdArray.length > 1 ? 's' : ''} booked successfully!`, [
+        alert('Success', 'Appointment booked successfully!', [
           {
             text: 'OK',
             onPress: () => router.replace('/home' as any),

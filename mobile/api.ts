@@ -1,4 +1,4 @@
-const IP = "192.168.0.103";
+const IP = "192.168.0.104";
 const BASE_URL = `http://${IP}:8080`;
 
 export interface ApiResponse<T> {
