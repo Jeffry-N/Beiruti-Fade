@@ -1,4 +1,4 @@
-const IP = "192.168.0.104";
+const IP = "192.168.0.106";
 const BASE_URL = `http://${IP}:8080`;
 
 export interface ApiResponse<T> {
@@ -35,6 +35,11 @@ export const apiCall = async <T>(
 
     if (!response.ok) {
       return { success: false, error: data.error || 'Unknown error' };
+    }
+
+    // If response is an array (e.g., from availability endpoint), wrap it
+    if (Array.isArray(data)) {
+      return { success: true, data: data as T };
     }
 
     return { success: true, data };
@@ -97,3 +102,6 @@ export const updateProfile = (
 
 export const getProfile = (id: number, type: 'customer' | 'barber') =>
   apiCall(`/profile?id=${id}&type=${type}`, 'GET');
+
+export const getAvailableTimes = (barberId: number, date: string) =>
+  apiCall(`/appointment/availability?barberId=${barberId}&date=${date}`, 'GET');

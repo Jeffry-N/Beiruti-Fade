@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator
 import { StatusBar } from 'expo-status-bar';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { getBarbers, getServices } from '../api';
+import { getBarbers, getServices, getAvailableTimes } from '../api';
 import ThemeModal from '../components/ThemeModal';
 import { useThemeAlert } from '../hooks/useThemeAlert';
 
@@ -46,6 +46,21 @@ export default function BookingScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
   const { visible, config, hide, alert } = useThemeAlert();
+  const [bookedTimes, setBookedTimes] = useState<string[]>([]);
+  const [loadingAvailability, setLoadingAvailability] = useState(false);
+
+  // Check if a time is in the past
+  const isTimePast = (dateStr: string, timeStr: string): boolean => {
+    const now = new Date();
+    const [hours, mins] = timeStr.split(':').map(Number);
+    const appointmentDateTime = new Date(dateStr + 'T' + timeStr + ':00');
+    return appointmentDateTime <= now;
+  };
+
+  // Check if a time slot is available (not booked and not in the past)
+  const isTimeAvailable = (timeStr: string): boolean => {
+    return !bookedTimes.includes(timeStr) && !isTimePast(selectedDate, timeStr);
+  };
 
   const timeSlots = [
     '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
@@ -94,9 +109,40 @@ export default function BookingScreen() {
     loadData();
   }, []);
 
+  // Fetch available times whenever barber or date changes
+  useEffect(() => {
+    const fetchAvailableTimes = async () => {
+      if (selectedBarber && selectedDate) {
+        setLoadingAvailability(true);
+        const result = await getAvailableTimes(selectedBarber, selectedDate);
+        if (result.success && Array.isArray(result.data)) {
+          const times = result.data as string[];
+          setBookedTimes(times);
+        } else {
+          setBookedTimes([]);
+        }
+        setLoadingAvailability(false);
+        // Clear selected time when date changes to prevent using old time from past date
+        setSelectedTime('');
+      } else {
+        setBookedTimes([]);
+      }
+    };
+
+    fetchAvailableTimes();
+  }, [selectedBarber, selectedDate]);
+
   const handleConfirm = () => {
     if (selectedServices.length === 0 || !selectedBarber || !selectedDate || !selectedTime) {
       alert('Error', 'Please select at least one service, a barber, date, and time');
+      return;
+    }
+
+    // Validate that the selected date is not in the past
+    const now = new Date();
+    const selectedDateTime = new Date(selectedDate + 'T' + selectedTime + ':00');
+    if (selectedDateTime <= now) {
+      alert('Error', 'Cannot book appointment in the past. Please select a future date and time.');
       return;
     }
 
@@ -231,26 +277,32 @@ export default function BookingScreen() {
         >
           {dates.map((date, index) => {
             const { day, date: dayNum } = getDateDisplay(date);
+            const now = new Date();
+            const dateOnly = new Date(date + 'T23:59:59');
+            const isPast = dateOnly < now;
             return (
               <TouchableOpacity
                 key={date}
                 style={[
                   styles.dateButton,
-                  { backgroundColor: selectedDate === date ? '#ED1C24' : theme.cardBg, borderColor: theme.cardBorder },
+                  isPast
+                    ? { backgroundColor: '#CCCCCC', borderColor: '#999999' }
+                    : { backgroundColor: selectedDate === date ? '#ED1C24' : theme.cardBg, borderColor: theme.cardBorder },
                   selectedDate === date && styles.dateButtonActive
                 ]}
-                onPress={() => setSelectedDate(date)}
+                onPress={() => !isPast && setSelectedDate(date)}
+                disabled={isPast}
               >
                 <Text style={[
                   styles.dateDay,
-                  { color: selectedDate === date ? '#FFFFFF' : theme.text },
+                  isPast ? { color: '#666666' } : { color: selectedDate === date ? '#FFFFFF' : theme.text },
                   selectedDate === date && styles.dateDayActive
                 ]}>
                   {day}
                 </Text>
                 <Text style={[
                   styles.dateNum,
-                  { color: selectedDate === date ? '#FFFFFF' : theme.text },
+                  isPast ? { color: '#666666' } : { color: selectedDate === date ? '#FFFFFF' : theme.text },
                   selectedDate === date && styles.dateNumActive
                 ]}>
                   {dayNum}
@@ -264,26 +316,37 @@ export default function BookingScreen() {
       {/* Time Selection */}
       <View style={styles.section}>
         <Text style={[styles.sectionTitle, { color: theme.text }]}>Select Time</Text>
+        {loadingAvailability && <ActivityIndicator size="small" color="#ED1C24" style={{ marginBottom: 8 }} />}
         <View style={styles.timesGrid}>
-          {timeSlots.map((time) => (
-            <TouchableOpacity
-              key={time}
-              style={[
-                styles.timeButton,
-                { backgroundColor: selectedTime === time ? '#ED1C24' : theme.cardBg, borderColor: theme.cardBorder },
-                selectedTime === time && styles.timeButtonActive
-              ]}
-              onPress={() => setSelectedTime(time)}
-            >
-              <Text style={[
-                styles.timeText,
-                { color: selectedTime === time ? '#FFFFFF' : theme.text },
-                selectedTime === time && styles.timeTextActive
-              ]}>
-                {time}
-              </Text>
-            </TouchableOpacity>
-          ))}
+          {timeSlots.map((time) => {
+            const available = isTimeAvailable(time);
+            const isBooked = bookedTimes.includes(time);
+            const isPastTime = isTimePast(selectedDate, time);
+            return (
+              <TouchableOpacity
+                key={time}
+                style={[
+                  styles.timeButton,
+                  available
+                    ? { backgroundColor: selectedTime === time ? '#ED1C24' : theme.cardBg, borderColor: theme.cardBorder }
+                    : { backgroundColor: '#CCCCCC', borderColor: '#999999' },
+                  selectedTime === time && styles.timeButtonActive
+                ]}
+                onPress={() => available && setSelectedTime(time)}
+                disabled={!available}
+              >
+                <Text style={[
+                  styles.timeText,
+                  available
+                    ? { color: selectedTime === time ? '#FFFFFF' : theme.text }
+                    : { color: '#666666' },
+                  selectedTime === time && styles.timeTextActive
+                ]}>
+                  {time}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
         </View>
       </View>
 

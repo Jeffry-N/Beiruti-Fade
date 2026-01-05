@@ -25,6 +25,20 @@ public class AppointmentHandler implements HttpHandler {
             String appointmentTime = getValue(body, "appointmentTime");
 
             try (Connection conn = db.getConnection()) {
+                // Check if time slot is already booked (pending or confirmed)
+                String checkSql = "SELECT COUNT(*) as count FROM appointment WHERE BarberId = ? AND AppointmentDate = ? AND AppointmentTime = ? AND Status IN ('pending', 'confirmed')";
+                PreparedStatement checkStmt = conn.prepareStatement(checkSql);
+                checkStmt.setInt(1, barberId);
+                checkStmt.setString(2, appointmentDate);
+                checkStmt.setString(3, appointmentTime);
+                ResultSet checkRs = checkStmt.executeQuery();
+                checkRs.next();
+                int count = checkRs.getInt("count");
+                if (count > 0) {
+                    sendResponse(exchange, 409, "{\"error\": \"Time slot already booked for this barber on this date\"}");
+                    return;
+                }
+
                 String sql = "INSERT INTO appointment (CustomerId, BarberId, ServiceId, AppointmentDate, AppointmentTime, Status) VALUES (?, ?, ?, ?, ?, 'pending')";
                 PreparedStatement pstmt = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
                 pstmt.setInt(1, customerId);
@@ -49,6 +63,52 @@ public class AppointmentHandler implements HttpHandler {
         } else if (exchange.getRequestMethod().equalsIgnoreCase("GET")) {
             // Get appointments for a customer or barber
             String query = exchange.getRequestURI().getQuery();
+            String path = exchange.getRequestURI().getPath();
+
+            // Handle availability check
+            if (path.contains("/availability")) {
+                int barberId = 0;
+                String date = "";
+                if (query != null && query.contains("barberId=")) {
+                    barberId = Integer.parseInt(query.split("barberId=")[1].split("&")[0]);
+                }
+                if (query != null && query.contains("date=")) {
+                    date = URLDecoder.decode(query.split("date=")[1].split("&")[0], StandardCharsets.UTF_8);
+                }
+
+                System.out.println("DEBUG: Availability check - barberId: " + barberId + ", date: " + date);
+
+                try (Connection conn = db.getConnection()) {
+                    String sql = "SELECT AppointmentTime FROM appointment WHERE BarberId = ? AND AppointmentDate = ? AND Status IN ('pending', 'confirmed') ORDER BY AppointmentTime";
+                    PreparedStatement pstmt = conn.prepareStatement(sql);
+                    pstmt.setInt(1, barberId);
+                    pstmt.setString(2, date);
+                    ResultSet rs = pstmt.executeQuery();
+
+                    StringBuilder jsonArray = new StringBuilder("[");
+                    boolean first = true;
+                    while (rs.next()) {
+                        if (!first) jsonArray.append(",");
+                        // Get time and format as HH:MM (remove seconds if present)
+                        String timeStr = rs.getString("AppointmentTime");
+                        if (timeStr.length() > 5) {
+                            timeStr = timeStr.substring(0, 5); // Convert "09:00:00" to "09:00"
+                        }
+                        jsonArray.append(String.format("\"%s\"", timeStr));
+                        first = false;
+                    }
+                    jsonArray.append("]");
+
+                    String response = jsonArray.toString();
+                    System.out.println("DEBUG: Availability response: " + response);
+                    sendResponse(exchange, 200, response);
+                } catch (Exception e) {
+                    System.out.println("DEBUG: Availability error: " + e.getMessage());
+                    sendResponse(exchange, 500, "{\"error\": \"Server error\"}");
+                }
+                return;
+            }
+
             int customerId = 0;
             int barberId = 0;
             
