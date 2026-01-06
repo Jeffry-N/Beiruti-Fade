@@ -40,7 +40,7 @@ public class BarberHandler implements HttpHandler {
                         sendResponse(exchange, 404, "{\"error\": \"Barber not found\"}");
                     }
                 } else {
-                    String sql = "SELECT Id, FullName, Bio FROM barber";
+                    String sql = "SELECT Id, FullName, Bio, ImageUrl FROM barber";
                     PreparedStatement pstmt = conn.prepareStatement(sql);
                     ResultSet rs = pstmt.executeQuery();
 
@@ -49,11 +49,16 @@ public class BarberHandler implements HttpHandler {
 
                     while (rs.next()) {
                         if (!first) jsonArray.append(",");
+                        String imageUrl = rs.getString("ImageUrl");
+                        String imageUrlJson = (imageUrl != null && !imageUrl.isEmpty()) 
+                            ? String.format(", \"imageUrl\": \"%s\"", imageUrl)
+                            : "";
                         jsonArray.append(String.format(
-                            "{\"id\": %d, \"name\": \"%s\", \"bio\": \"%s\"}",
+                            "{\"id\": %d, \"name\": \"%s\", \"bio\": \"%s\"%s}",
                             rs.getInt("Id"),
                             rs.getString("FullName"),
-                            rs.getString("Bio") != null ? rs.getString("Bio") : ""
+                            rs.getString("Bio") != null ? rs.getString("Bio") : "",
+                            imageUrlJson
                         ));
                         first = false;
                     }

@@ -19,6 +19,7 @@ CREATE TABLE barber (
     Email VARCHAR(100),
     Password VARCHAR(255) NOT NULL,
     Bio TEXT,
+    ImageUrl TEXT,
     CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

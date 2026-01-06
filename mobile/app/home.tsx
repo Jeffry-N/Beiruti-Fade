@@ -18,6 +18,7 @@ interface Barber {
   id: number;
   name: string;
   bio: string;
+  imageUrl?: string;
 }
 
 export default function HomeScreen() {
@@ -169,7 +170,15 @@ export default function HomeScreen() {
         {barbers.map((barber) => (
           <TouchableOpacity key={barber.id} style={[styles.barberCard, { backgroundColor: theme.cardBg, borderColor: theme.cardBorder }]} onPress={() => router.push({ pathname: '/barber-detail', params: { id: String(barber.id) } } as any)}>
             <View style={styles.barberAvatar}>
-              <Text style={styles.avatarText}>{barber.name.charAt(0)}</Text>
+              {barber.imageUrl ? (
+                <Image
+                  source={{ uri: barber.imageUrl }}
+                  style={styles.barberAvatarImage}
+                  resizeMode="cover"
+                />
+              ) : (
+                <Text style={styles.avatarText}>{barber.name.charAt(0)}</Text>
+              )}
             </View>
             <View style={styles.barberInfo}>
               <Text style={[styles.barberName, { color: theme.text }]}>{barber.name}</Text>
@@ -440,6 +449,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
+    overflow: 'hidden',
+  },
+  barberAvatarImage: {
+    width: 44,
+    height: 44,
   },
   avatarText: {
     color: '#FFFFFF',
