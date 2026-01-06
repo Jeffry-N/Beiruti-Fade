@@ -27,7 +27,8 @@ CREATE TABLE service (
     Id INT AUTO_INCREMENT PRIMARY KEY,
     Name VARCHAR(100) NOT NULL,
     Description TEXT,
-    Price DECIMAL(10, 2) NOT NULL
+    Price DECIMAL(10, 2) NOT NULL,
+    ImageUrl TEXT
 );
 
 -- 4. Product Table

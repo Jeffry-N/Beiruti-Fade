@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator, useColorScheme } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator, useColorScheme, Image } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -12,6 +12,7 @@ interface Service {
   name: string;
   description: string;
   price: number;
+  imageUrl?: string;
 }
 
 interface Barber {
@@ -208,22 +209,44 @@ export default function BookingScreen() {
       <View style={styles.section}>
         <Text style={[styles.sectionTitle, { color: theme.text }]}>Select Service</Text>
         <View style={styles.optionsContainer}>
-          {services.map((service) => (
-            <TouchableOpacity
-              key={service.id}
-              style={[
-                styles.optionButton,
-                { backgroundColor: selectedServices.includes(service.id) ? '#ED1C24' : theme.cardBg, borderColor: theme.cardBorder },
-                selectedServices.includes(service.id) && styles.optionButtonActive
-              ]}
-              onPress={() => {
-                if (selectedServices.includes(service.id)) {
-                  setSelectedServices(selectedServices.filter(id => id !== service.id));
-                } else {
-                  setSelectedServices([...selectedServices, service.id]);
-                }
-              }}
-            >
+          {services.map((service) => {
+            const isFullPackage = service.name.toLowerCase().includes('full package');
+            return (
+              <TouchableOpacity
+                key={service.id}
+                style={[
+                  styles.optionButton,
+                  { backgroundColor: selectedServices.includes(service.id) ? '#ED1C24' : theme.cardBg, borderColor: theme.cardBorder },
+                  selectedServices.includes(service.id) && styles.optionButtonActive
+                ]}
+                onPress={() => {
+                  if (isFullPackage) {
+                    // If full package is clicked, either select only it or deselect it
+                    if (selectedServices.includes(service.id)) {
+                      setSelectedServices([]);
+                    } else {
+                      setSelectedServices([service.id]);
+                    }
+                  } else {
+                    // If any other service is clicked, remove full package and toggle this service
+                    const fullPackageId = services.find(s => s.name.toLowerCase().includes('full package'))?.id;
+                    const withoutFullPackage = selectedServices.filter(id => id !== fullPackageId);
+                    
+                    if (selectedServices.includes(service.id)) {
+                      setSelectedServices(withoutFullPackage.filter(id => id !== service.id));
+                    } else {
+                      setSelectedServices([...withoutFullPackage, service.id]);
+                    }
+                  }
+                }}
+              >
+              {service.imageUrl && (
+                <Image
+                  source={{ uri: service.imageUrl }}
+                  style={styles.serviceImage}
+                  resizeMode="cover"
+                />
+              )}
               <Text style={[
                 styles.optionText,
                 { color: selectedServices.includes(service.id) ? '#FFFFFF' : theme.text },
@@ -239,7 +262,8 @@ export default function BookingScreen() {
                 ${service.price.toFixed(2)}
               </Text>
             </TouchableOpacity>
-          ))}
+          );
+          })}
         </View>
       </View>
 
@@ -415,6 +439,12 @@ const styles = StyleSheet.create({
   optionButtonActive: {
     backgroundColor: '#ED1C24',
     borderColor: '#ED1C24',
+  },
+  serviceImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    marginBottom: 8,
   },
   optionText: {
     fontWeight: '600',

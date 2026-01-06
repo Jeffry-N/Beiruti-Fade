@@ -15,7 +15,7 @@ public class ServiceHandler implements HttpHandler {
 
         if (exchange.getRequestMethod().equalsIgnoreCase("GET")) {
             try (Connection conn = db.getConnection()) {
-                String sql = "SELECT Id, Name, Description, Price FROM service";
+                String sql = "SELECT Id, Name, Description, Price, ImageUrl FROM service";
                 PreparedStatement pstmt = conn.prepareStatement(sql);
                 ResultSet rs = pstmt.executeQuery();
 
@@ -24,12 +24,17 @@ public class ServiceHandler implements HttpHandler {
 
                 while (rs.next()) {
                     if (!first) jsonArray.append(",");
+                    String imageUrl = rs.getString("ImageUrl");
+                    String imageUrlJson = (imageUrl != null && !imageUrl.isEmpty()) 
+                        ? String.format(", \"imageUrl\": \"%s\"", imageUrl)
+                        : "";
                     jsonArray.append(String.format(
-                        "{\"id\": %d, \"name\": \"%s\", \"description\": \"%s\", \"price\": %.2f}",
+                        "{\"id\": %d, \"name\": \"%s\", \"description\": \"%s\", \"price\": %.2f%s}",
                         rs.getInt("Id"),
                         rs.getString("Name"),
                         rs.getString("Description"),
-                        rs.getDouble("Price")
+                        rs.getDouble("Price"),
+                        imageUrlJson
                     ));
                     first = false;
                 }

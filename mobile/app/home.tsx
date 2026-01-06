@@ -11,6 +11,7 @@ interface Service {
   name: string;
   description: string;
   price: number;
+  imageUrl?: string;
 }
 
 interface Barber {
@@ -142,7 +143,15 @@ export default function HomeScreen() {
             onPress={() => router.push({ pathname: '/service-detail', params: { id: String(service.id), name: service.name, description: service.description, price: String(service.price) } } as any)}
           >
             <View style={styles.serviceIcon}>
-              <Text style={styles.iconText}>✂️</Text>
+              {service.imageUrl ? (
+                <Image
+                  source={{ uri: service.imageUrl }}
+                  style={styles.serviceIconImage}
+                  resizeMode="cover"
+                />
+              ) : (
+                <Text style={styles.iconText}>✂️</Text>
+              )}
             </View>
             <View style={styles.serviceInfo}>
               <Text style={[styles.serviceName, { color: theme.text }]}>{service.name}</Text>
@@ -331,6 +340,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#00A651',
     justifyContent: 'center',
     alignItems: 'center',
+    overflow: 'hidden',
+  },
+  serviceIconImage: {
+    width: 48,
+    height: 48,
   },
   iconText: {
     fontSize: 24,
