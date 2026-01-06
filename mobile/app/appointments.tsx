@@ -29,7 +29,9 @@ export default function AppointmentsScreen() {
   };
   
   const router = useRouter();
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [activeAppointments, setActiveAppointments] = useState<Appointment[]>([]);
+  const [completedAppointments, setCompletedAppointments] = useState<Appointment[]>([]);
+  const [cancelledAppointments, setCancelledAppointments] = useState<Appointment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
     const { visible, config, hide, alert } = useThemeAlert();
@@ -44,10 +46,14 @@ export default function AppointmentsScreen() {
         const result = await getAppointments(parsedUser.id);
         if (result.success && Array.isArray(result.data)) {
           const raw = result.data as any[];
-          // Filter out cancelled or completed
-          const active = raw.filter(apt => apt.status !== 'cancelled' && apt.status !== 'completed');
-          // Group by barberId + date + time + status to avoid mixing different states
-          const map = new Map<string, Appointment>();
+          
+          // Separate appointments by status
+          const active = raw.filter(apt => apt.status === 'pending' || apt.status === 'confirmed');
+          const completed = raw.filter(apt => apt.status === 'completed');
+          const cancelled = raw.filter(apt => apt.status === 'cancelled');
+          
+          // Process active appointments
+          const activeMap = new Map<string, Appointment>();
           for (const apt of active) {
             const key = `${apt.barberId}-${apt.date}-${apt.time}-${apt.status}`;
             const item: Appointment = {
@@ -68,9 +74,8 @@ export default function AppointmentsScreen() {
                 status: apt.status,
               } as Appointment]
             };
-            if (map.has(key)) {
-              const existing = map.get(key)!;
-              // Merge unique service names only
+            if (activeMap.has(key)) {
+              const existing = activeMap.get(key)!;
               const names = new Set((existing.serviceName + ', ' + item.serviceName).split(', ').filter(Boolean));
               existing.serviceName = Array.from(names).join(', ');
               existing.allAppointments = [
@@ -78,10 +83,57 @@ export default function AppointmentsScreen() {
                 ...item.allAppointments!
               ];
             } else {
-              map.set(key, item);
+              activeMap.set(key, item);
             }
           }
-          setAppointments(Array.from(map.values()));
+          
+          // Process completed appointments (group similarly)
+          const completedMap = new Map<string, Appointment>();
+          for (const apt of completed) {
+            const key = `${apt.barberId}-${apt.date}-${apt.time}`;
+            const item: Appointment = {
+              id: apt.id,
+              barberId: Number(apt.barberId || 0),
+              barberName: apt.barberName,
+              serviceName: apt.serviceName,
+              date: apt.date,
+              time: apt.time,
+              status: apt.status,
+            };
+            if (completedMap.has(key)) {
+              const existing = completedMap.get(key)!;
+              const names = new Set((existing.serviceName + ', ' + item.serviceName).split(', ').filter(Boolean));
+              existing.serviceName = Array.from(names).join(', ');
+            } else {
+              completedMap.set(key, item);
+            }
+          }
+          
+          // Process cancelled appointments (group similarly)
+          const cancelledMap = new Map<string, Appointment>();
+          for (const apt of cancelled) {
+            const key = `${apt.barberId}-${apt.date}-${apt.time}`;
+            const item: Appointment = {
+              id: apt.id,
+              barberId: Number(apt.barberId || 0),
+              barberName: apt.barberName,
+              serviceName: apt.serviceName,
+              date: apt.date,
+              time: apt.time,
+              status: apt.status,
+            };
+            if (cancelledMap.has(key)) {
+              const existing = cancelledMap.get(key)!;
+              const names = new Set((existing.serviceName + ', ' + item.serviceName).split(', ').filter(Boolean));
+              existing.serviceName = Array.from(names).join(', ');
+            } else {
+              cancelledMap.set(key, item);
+            }
+          }
+          
+          setActiveAppointments(Array.from(activeMap.values()));
+          setCompletedAppointments(Array.from(completedMap.values()));
+          setCancelledAppointments(Array.from(cancelledMap.values()));
         }
       }
       setIsLoading(false);
@@ -144,18 +196,11 @@ export default function AppointmentsScreen() {
 
       {/* Appointments List */}
       <ScrollView showsVerticalScrollIndicator={false} style={styles.listContainer}>
-        {appointments.length === 0 ? (
-          <View style={styles.emptyContainer}>
-            <Text style={[styles.emptyText, { color: theme.subtext }]}>No appointments yet</Text>
-            <TouchableOpacity 
-              style={styles.bookButton}
-              onPress={() => router.push('/booking' as any)}
-            >
-              <Text style={styles.bookButtonText}>Book Now</Text>
-            </TouchableOpacity>
-          </View>
-        ) : (
-          appointments.map((appointment) => (
+        {/* Active Appointments */}
+        {activeAppointments.length > 0 && (
+          <View>
+            <Text style={[styles.sectionTitle, { color: theme.text }]}>Active Appointments</Text>
+            {activeAppointments.map((appointment) => (
             <View key={appointment.id} style={[styles.appointmentCard, { backgroundColor: theme.cardBg, borderColor: theme.cardBorder }]}>
               <View style={styles.appointmentHeader}>
                 <Text style={styles.barberName}>{appointment.barberName}</Text>
@@ -242,7 +287,59 @@ export default function AppointmentsScreen() {
                 </TouchableOpacity>
               </View>
             </View>
-          ))
+          ))}
+          </View>
+        )}
+        
+        {/* Completed Appointments */}
+        {completedAppointments.length > 0 && (
+          <View>
+            <Text style={[styles.sectionTitle, { color: theme.text }]}>Completed Appointments</Text>
+            {completedAppointments.map((appointment) => (
+              <View key={appointment.id} style={[styles.appointmentCard, { backgroundColor: theme.cardBg, borderColor: theme.cardBorder }]}>
+                <View style={styles.appointmentHeader}>
+                  <Text style={styles.barberName}>{appointment.barberName}</Text>
+                  <View style={[styles.statusBadge, { backgroundColor: getStatusColor(appointment.status) }]}>
+                    <Text style={styles.statusText}>COMPLETED</Text>
+                  </View>
+                </View>
+                <Text style={[styles.serviceText, { color: theme.text }]}>{appointment.serviceName}</Text>
+                <Text style={[styles.dateText, { color: theme.subtext }]}>{formatDate(appointment.date)} • {appointment.time}</Text>
+              </View>
+            ))}
+          </View>
+        )}
+        
+        {/* Cancelled Appointments */}
+        {cancelledAppointments.length > 0 && (
+          <View>
+            <Text style={[styles.sectionTitle, { color: theme.text }]}>Cancelled Appointments</Text>
+            {cancelledAppointments.map((appointment) => (
+              <View key={appointment.id} style={[styles.appointmentCard, { backgroundColor: theme.cardBg, borderColor: theme.cardBorder }]}>
+                <View style={styles.appointmentHeader}>
+                  <Text style={styles.barberName}>{appointment.barberName}</Text>
+                  <View style={[styles.statusBadge, { backgroundColor: getStatusColor(appointment.status) }]}>
+                    <Text style={styles.statusText}>CANCELLED</Text>
+                  </View>
+                </View>
+                <Text style={[styles.serviceText, { color: theme.text }]}>{appointment.serviceName}</Text>
+                <Text style={[styles.dateText, { color: theme.subtext }]}>{formatDate(appointment.date)} • {appointment.time}</Text>
+              </View>
+            ))}
+          </View>
+        )}
+        
+        {/* Empty state */}
+        {activeAppointments.length === 0 && completedAppointments.length === 0 && cancelledAppointments.length === 0 && (
+          <View style={styles.emptyContainer}>
+            <Text style={[styles.emptyText, { color: theme.subtext }]}>No appointments yet</Text>
+            <TouchableOpacity 
+              style={styles.bookButton}
+              onPress={() => router.push('/booking' as any)}
+            >
+              <Text style={styles.bookButtonText}>Book Now</Text>
+            </TouchableOpacity>
+          </View>
         )}
         <View style={{ height: 20 }} />
       </ScrollView>
@@ -284,6 +381,12 @@ const styles = StyleSheet.create({
   listContainer: {
     flex: 1,
     paddingHorizontal: 16,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginTop: 12,
+    marginBottom: 12,
   },
   
   emptyContainer: {
@@ -378,6 +481,15 @@ const styles = StyleSheet.create({
     color: '#FF4444',
     fontWeight: 'bold',
     fontSize: 12,
+  },
+  serviceText: {
+    fontSize: 13,
+    fontWeight: '500',
+    marginBottom: 4,
+  },
+  dateText: {
+    fontSize: 12,
+    marginTop: 4,
   },
   
 });

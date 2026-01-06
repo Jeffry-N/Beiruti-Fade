@@ -38,7 +38,8 @@ export default function BarberHomeScreen() {
   
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [activeAppointments, setActiveAppointments] = useState<Appointment[]>([]);
+  const [completedAppointments, setCompletedAppointments] = useState<Appointment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { visible, config, hide, alert } = useThemeAlert();
 
@@ -52,10 +53,12 @@ export default function BarberHomeScreen() {
           const result = await getBarberAppointments(parsedUser.id);
           if (result.success && Array.isArray(result.data)) {
             const raw = result.data as any[];
-            // Only consider active appointments (pending or confirmed)
+            // Separate active and completed appointments
             const active = raw.filter((item) => item.status === 'pending' || item.status === 'confirmed');
-            // Group by customerId + date + time + status to avoid mixing old confirmed with new pending
-            const map = new Map<string, Appointment>();
+            const completed = raw.filter((item) => item.status === 'completed');
+            
+            // Group active appointments by customerId + date + time + status
+            const activeMap = new Map<string, Appointment>();
             for (const item of active) {
               const customerId = Number(item.customerId || 0);
               const key = `${customerId}-${item.date}-${item.time}-${item.status}`;
@@ -69,19 +72,48 @@ export default function BarberHomeScreen() {
                 status: item.status,
                 customerId,
               };
-              if (map.has(key)) {
-                const existing = map.get(key)!;
+              if (activeMap.has(key)) {
+                const existing = activeMap.get(key)!;
                 existing.serviceName = existing.serviceName + ', ' + apt.serviceName;
                 existing.allAppointments = [...(existing.allAppointments || [existing]), apt];
-                // Prefer a consolidated status: if any pending, show pending; else if any confirmed, show confirmed; else completed/cancelled
                 const statuses = new Set([existing.status, apt.status]);
                 if (statuses.has('pending')) existing.status = 'pending';
                 else if (statuses.has('confirmed')) existing.status = 'confirmed';
               } else {
-                map.set(key, { ...apt, allAppointments: [apt] });
+                activeMap.set(key, { ...apt, allAppointments: [apt] });
               }
             }
-            setAppointments(Array.from(map.values()));
+            
+            // Group completed appointments by customerId + date + time
+            const completedMap = new Map<string, Appointment>();
+            for (const item of completed) {
+              const customerId = Number(item.customerId || 0);
+              const key = `${customerId}-${item.date}-${item.time}`;
+              const apt: Appointment = {
+                id: item.id,
+                barberName: item.barberName,
+                customerName: item.customerName,
+                serviceName: item.serviceName,
+                date: item.date,
+                time: item.time,
+                status: item.status,
+                customerId,
+              };
+              if (completedMap.has(key)) {
+                const existing = completedMap.get(key)!;
+                existing.serviceName = existing.serviceName + ', ' + apt.serviceName;
+              } else {
+                completedMap.set(key, apt);
+              }
+            }
+            
+            // Sort completed appointments by date (most recent first)
+            const completedArray = Array.from(completedMap.values()).sort((a, b) => {
+              return new Date(b.date).getTime() - new Date(a.date).getTime();
+            });
+            
+            setActiveAppointments(Array.from(activeMap.values()));
+            setCompletedAppointments(completedArray);
           }
       }
     } catch (error) {
@@ -112,9 +144,21 @@ export default function BarberHomeScreen() {
     });
   };
 
-  const getPendingAppointments = () => appointments.filter(a => a.status === 'pending');
-  const getConfirmedAppointments = () => appointments.filter(a => a.status === 'confirmed');
-  const getCompletedAppointments = () => appointments.filter(a => a.status === 'completed');
+  const getPendingAppointments = () => activeAppointments.filter(a => a.status === 'pending');
+  const getConfirmedAppointments = () => activeAppointments.filter(a => a.status === 'confirmed');
+  
+  // Group completed appointments by date
+  const getCompletedByDate = () => {
+    const grouped = new Map<string, Appointment[]>();
+    for (const apt of completedAppointments) {
+      const date = apt.date;
+      if (!grouped.has(date)) {
+        grouped.set(date, []);
+      }
+      grouped.get(date)!.push(apt);
+    }
+    return Array.from(grouped.entries()).map(([date, appts]) => ({ date, appointments: appts }));
+  };
 
   const handleAccept = (appointmentId: number, group?: Appointment[]) => {
     alert('Accept Appointment', 'Mark this as confirmed?', [
@@ -304,6 +348,32 @@ export default function BarberHomeScreen() {
         )}
       </View>
 
+      {/* Completed Appointments (Grouped by Date) */}
+      {getCompletedByDate().length > 0 && (
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>Completed Appointments</Text>
+          {getCompletedByDate().map(({ date, appointments }) => (
+            <View key={date}>
+              <Text style={[styles.dateHeader, { color: theme.subtext }]}>{formatDate(date)}</Text>
+              {appointments.map((appointment) => (
+                <View key={appointment.id} style={[styles.appointmentCard, { backgroundColor: theme.cardBg, borderColor: theme.cardBorder }]}>
+                  <View style={styles.appointmentHeader}>
+                    <View>
+                      <Text style={[styles.customerName, { color: theme.text }]}>{appointment.customerName}</Text>
+                      <Text style={[styles.serviceText, { color: theme.subtext }]}>{appointment.serviceName}</Text>
+                    </View>
+                    <View style={[styles.statusBadge, { backgroundColor: '#00D084' }]}>
+                      <Text style={styles.statusText}>COMPLETED</Text>
+                    </View>
+                  </View>
+                  <Text style={[styles.timeText, { color: theme.subtext }]}>{appointment.time}</Text>
+                </View>
+              ))}
+            </View>
+          ))}
+        </View>
+      )}
+
       <View style={{ height: 20 }} />
     </ScrollView>
 
@@ -401,6 +471,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 12,
+  },
+  dateHeader: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginTop: 8,
+    marginBottom: 8,
   },
   emptyText: {
     color: '#666',

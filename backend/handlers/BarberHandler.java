@@ -26,14 +26,18 @@ public class BarberHandler implements HttpHandler {
                 }
 
                 if (id != null) {
-                    String sql = "SELECT Id, FullName, Bio, Email FROM barber WHERE Id = ?";
+                    String sql = "SELECT Id, FullName, Bio, Email, ImageUrl FROM barber WHERE Id = ?";
                     PreparedStatement pstmt = conn.prepareStatement(sql);
                     pstmt.setInt(1, id);
                     ResultSet rs = pstmt.executeQuery();
                     if (rs.next()) {
+                        String imageUrl = rs.getString("ImageUrl");
+                        String imageUrlJson = (imageUrl != null && !imageUrl.isEmpty()) 
+                            ? String.format(", \"imageUrl\": \"%s\"", imageUrl)
+                            : "";
                         String response = String.format(
-                            "{\"id\": %d, \"name\": \"%s\", \"bio\": \"%s\", \"email\": \"%s\"}",
-                            rs.getInt("Id"), rs.getString("FullName"), rs.getString("Bio") != null ? rs.getString("Bio") : "", rs.getString("Email") != null ? rs.getString("Email") : ""
+                            "{\"id\": %d, \"name\": \"%s\", \"bio\": \"%s\", \"email\": \"%s\"%s}",
+                            rs.getInt("Id"), rs.getString("FullName"), rs.getString("Bio") != null ? rs.getString("Bio") : "", rs.getString("Email") != null ? rs.getString("Email") : "", imageUrlJson
                         );
                         sendResponse(exchange, 200, response);
                     } else {

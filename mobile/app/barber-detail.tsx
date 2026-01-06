@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, useColorScheme } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, useColorScheme, Image } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { getBarber } from '../api';
 
@@ -8,6 +8,7 @@ interface Barber {
   name: string;
   bio: string;
   email?: string;
+  imageUrl?: string;
 }
 
 export const options = {
@@ -68,7 +69,15 @@ export default function BarberDetailScreen() {
       <View style={styles.body}>
         <View style={[styles.header]}>
           <View style={styles.avatar}>
-            <Text style={styles.avatarText}>{barber.name?.charAt(0)}</Text>
+            {barber.imageUrl ? (
+              <Image
+                source={{ uri: barber.imageUrl }}
+                style={styles.barberImage}
+                resizeMode="cover"
+              />
+            ) : (
+              <Text style={styles.avatarText}>{barber.name?.charAt(0)}</Text>
+            )}
           </View>
           <View style={{ flex: 1 }}>
             <Text style={[styles.name, { color: theme.text }]}>{barber.name}</Text>
@@ -98,7 +107,8 @@ const styles = StyleSheet.create({
   contentContainer: { flexGrow: 1, padding: 16, justifyContent: 'center' },
   body: { alignItems: 'center', width: '100%', flex: 1, justifyContent: 'center' },
   header: { flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
-  avatar: { width: 56, height: 56, borderRadius: 28, backgroundColor: '#00A651', justifyContent: 'center', alignItems: 'center', marginRight: 12 },
+  avatar: { width: 56, height: 56, borderRadius: 28, backgroundColor: '#00A651', justifyContent: 'center', alignItems: 'center', marginRight: 12, overflow: 'hidden' },
+  barberImage: { width: 56, height: 56 },
   avatarText: { color: '#FFFFFF', fontWeight: 'bold', fontSize: 22 },
   name: { fontSize: 20, fontWeight: '800' },
   email: { fontSize: 12 },

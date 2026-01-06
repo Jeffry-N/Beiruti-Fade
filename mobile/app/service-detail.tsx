@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, useColorScheme, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, useColorScheme, ScrollView, Image } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
 export const options = {
@@ -7,7 +7,7 @@ export const options = {
 };
 
 export default function ServiceDetailScreen() {
-  const { id, name, description, price } = useLocalSearchParams<{ id: string; name: string; description: string; price: string }>();
+  const { id, name, description, price, imageUrl } = useLocalSearchParams<{ id: string; name: string; description: string; price: string; imageUrl?: string }>();
   const router = useRouter();
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
@@ -25,6 +25,13 @@ export default function ServiceDetailScreen() {
       contentContainerStyle={[styles.contentContainer]}
     >
       <View style={styles.body}>
+        {imageUrl && (
+          <Image
+            source={{ uri: imageUrl }}
+            style={styles.serviceImage}
+            resizeMode="cover"
+          />
+        )}
         <View style={[styles.card, { backgroundColor: theme.cardBg, borderColor: theme.cardBorder }]}>
           <View style={styles.headerRow}>
             <Text style={[styles.name, { color: theme.text }]}>{name}</Text>
@@ -47,6 +54,12 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   contentContainer: { flexGrow: 1, padding: 16, justifyContent: 'center' },
   body: { alignItems: 'center', width: '100%', flex: 1, justifyContent: 'center' },
+  serviceImage: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    marginBottom: 20,
+  },
   card: { borderRadius: 12, borderWidth: 1, padding: 16, width: '100%', maxWidth: 480 },
   headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
   name: { fontSize: 20, fontWeight: '800' },

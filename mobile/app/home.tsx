@@ -141,7 +141,7 @@ export default function HomeScreen() {
           <TouchableOpacity 
             key={service.id} 
             style={[styles.serviceCard, { backgroundColor: theme.cardBg, borderColor: theme.cardBorder }]}
-            onPress={() => router.push({ pathname: '/service-detail', params: { id: String(service.id), name: service.name, description: service.description, price: String(service.price) } } as any)}
+            onPress={() => router.push({ pathname: '/service-detail', params: { id: String(service.id), name: service.name, description: service.description, price: String(service.price), imageUrl: service.imageUrl || '' } } as any)}
           >
             <View style={styles.serviceIcon}>
               {service.imageUrl ? (
