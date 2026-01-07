@@ -7,6 +7,19 @@ import { getBarberAppointments, updateAppointmentStatus } from '../api';
 import ThemeModal from '../components/ThemeModal';
 import { useThemeAlert } from '../hooks/useThemeAlert';
 
+const barberImages: Record<string, any> = {
+  'alex.jpg': require('../assets/images/alex.jpg'),
+  'mike.jpg': require('../assets/images/mike.jpg'),
+  'steve.jpg': require('../assets/images/steve.jpg'),
+};
+
+const getBarberImage = (profileImage: string | undefined) => {
+  if (!profileImage || !barberImages[profileImage]) {
+    return barberImages['alex.jpg']; // default fallback
+  }
+  return barberImages[profileImage];
+};
+
 interface Appointment {
   id: number;
   barberName: string;
@@ -240,17 +253,10 @@ export default function BarberHomeScreen() {
             onPress={() => setMenuOpen(!menuOpen)}
             style={styles.userAvatarButton}
           >
-            {user?.profileImage ? (
-              <Image
-                source={{ uri: user.profileImage }}
-                style={styles.userAvatar}
-              />
-            ) : (
-              <Image
-                source={{ uri: 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&size=55' }}
-                style={styles.userAvatar}
-              />
-            )}
+            <Image
+              source={getBarberImage(user?.profileImage)}
+              style={styles.userAvatar}
+            />
           </Pressable>
         </View>
       </ExpoLinearGradient>

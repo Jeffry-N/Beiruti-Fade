@@ -8,6 +8,19 @@ import { useThemeAlert } from '../hooks/useThemeAlert';
 import { LinearGradient as ExpoLinearGradient } from 'expo-linear-gradient';
 import { Pressable } from 'react-native';
 
+const barberImages: Record<string, any> = {
+  'alex.jpg': require('../assets/images/alex.jpg'),
+  'mike.jpg': require('../assets/images/mike.jpg'),
+  'steve.jpg': require('../assets/images/steve.jpg'),
+};
+
+const getBarberImage = (profileImage: string | undefined) => {
+  if (!profileImage || !barberImages[profileImage]) {
+    return barberImages['alex.jpg']; // default fallback
+  }
+  return barberImages[profileImage];
+};
+
 interface Service {
   id: number;
   name: string;
@@ -176,17 +189,10 @@ export default function HomeScreen() {
               onPress={() => setMenuOpen(!menuOpen)}
               style={styles.userAvatarButton}
             >
-              {user?.profileImage ? (
-                <Image
-                  source={{ uri: user.profileImage }}
-                  style={styles.userAvatar}
-                />
-              ) : (
-                <Image
-                  source={{ uri: 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&size=55' }}
-                  style={styles.userAvatar}
-                />
-              )}
+              <Image
+                source={{ uri: 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&size=55' }}
+                style={styles.userAvatar}
+              />
             </Pressable>
           </View>
         </ExpoLinearGradient>
@@ -314,13 +320,13 @@ export default function HomeScreen() {
                   {barber.imageUrl ? (
                     <>
                       <Image
-                        source={{ uri: barber.imageUrl }}
+                        source={getBarberImage(barber.imageUrl)}
                         style={[styles.imageBlurredBg, { opacity: isDark ? 0.3 : 0.6 }]}
                         resizeMode="cover"
                         blurRadius={20}
                       />
                       <Image
-                        source={{ uri: barber.imageUrl }}
+                        source={getBarberImage(barber.imageUrl)}
                         style={styles.modernBarberImage}
                         resizeMode="contain"
                       />
