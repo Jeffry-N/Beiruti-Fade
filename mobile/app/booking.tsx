@@ -196,6 +196,7 @@ export default function BookingScreen() {
   return (
     <>
     <ScrollView style={[styles.container, { backgroundColor: theme.bg }]} showsVerticalScrollIndicator={false}>
+      <StatusBar backgroundColor={theme.bg} translucent={false} />
       {/* Modern Gradient Header */}
       <LinearGradient
         colors={isDark ? ['#1E1E1E', '#0F0F0F'] : ['#FFFFFF', '#F5F5F5']}

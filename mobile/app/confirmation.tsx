@@ -123,10 +123,9 @@ export default function ConfirmationScreen() {
       {/* Header */}
       <LinearGradient
         colors={theme.headerGradient as any}
-        style={[styles.headerGradient, {
-          shadowColor: isDark ? '#000000' : '#00000030',
-          shadowOpacity: isDark ? 0.5 : 0.2,
-        }]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.headerGradient}
       >
         <TouchableOpacity onPress={() => {
           if (reschedule === 'true') {
@@ -244,13 +243,14 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   headerGradient: {
-    paddingVertical: 16,
-    paddingHorizontal: 16,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
+    paddingTop: 40,
+    paddingBottom: 20,
+    paddingHorizontal: 20,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
     shadowOffset: { width: 0, height: 4 },
-    shadowRadius: 10,
-    elevation: 6,
+    elevation: 5,
   },
   backButtonHeader: {
     alignSelf: 'flex-start',
@@ -272,14 +272,14 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   card: {
-    borderRadius: 20,
-    padding: 24,
+    borderRadius: 12,
+    padding: 20,
     borderWidth: 1,
-    shadowColor: '#00A651',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 10,
-    elevation: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 3,
   },
   title: {
     fontSize: 22,
@@ -317,11 +317,11 @@ const styles = StyleSheet.create({
   editButtonWrapper: {
     flex: 1,
     borderRadius: 12,
-    shadowColor: '#00A651',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 10,
-    elevation: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 3,
   },
   editButton: {
     paddingVertical: 14,
@@ -338,11 +338,11 @@ const styles = StyleSheet.create({
   confirmButtonWrapper: {
     flex: 1,
     borderRadius: 12,
-    shadowColor: '#ED1C24',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 10,
-    elevation: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 3,
   },
   confirmButton: {
     paddingVertical: 14,

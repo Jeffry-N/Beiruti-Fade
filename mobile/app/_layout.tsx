@@ -44,7 +44,7 @@ export default function RootLayout() {
   if (isLoading) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: bgColor }}>
-        <StatusBar backgroundColor={bgColor} />
+        <StatusBar backgroundColor={bgColor} translucent={false} />
         <ActivityIndicator size="large" color="#ED1C24" />
       </View>
     );
@@ -52,7 +52,7 @@ export default function RootLayout() {
 
   return (
     <>
-      <StatusBar backgroundColor={bgColor} />
+      <StatusBar backgroundColor={bgColor} translucent={false} />
       <Stack
       screenOptions={{
         headerShown: false,
