@@ -8,6 +8,7 @@ import backend.handlers.BarberHandler;
 import backend.handlers.AppointmentHandler;
 import backend.handlers.ProfileHandler;
 
+
 public class MainServer {
     public static void main(String[] args) throws Exception {
         HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0);

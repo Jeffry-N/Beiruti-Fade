@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator, useColorScheme, Image } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getBarbers, getServices, getAvailableTimes } from '../api';
@@ -19,26 +20,29 @@ interface Barber {
   id: number;
   name: string;
   bio: string;
+  imageUrl?: string;
 }
 
 export default function BookingScreen() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
   const theme = {
-    bg: isDark ? '#1A1A1A' : '#FFFFFF',
+    bg: isDark ? '#0F0F0F' : '#F8F9FA',
     text: isDark ? '#FFFFFF' : '#1A1A1A',
-    cardBg: isDark ? '#2A2A2A' : '#F5F5F5',
-    cardBorder: isDark ? '#3A3A3A' : '#E0E0E0',
-    subtext: isDark ? '#AAA' : '#666',
+    cardBg: isDark ? '#1E1E1E' : '#FFFFFF',
+    cardBorder: isDark ? '#2A2A2A' : '#E8E8E8',
+    subtext: isDark ? '#B0B0B0' : '#6B7280',
   };
   
   const router = useRouter();
-  const { serviceId: initialServiceId, appointmentIds, reschedule } = useLocalSearchParams();
+  const { serviceId: initialServiceId, barberId: initialBarberId, appointmentIds, reschedule } = useLocalSearchParams();
   
   const [selectedServices, setSelectedServices] = useState<number[]>(
     initialServiceId ? [Number(initialServiceId)] : []
   );
-  const [selectedBarber, setSelectedBarber] = useState<number | null>(null);
+  const [selectedBarber, setSelectedBarber] = useState<number | null>(
+    initialBarberId ? Number(initialBarberId) : null
+  );
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [selectedTime, setSelectedTime] = useState<string>('');
   
@@ -192,22 +196,33 @@ export default function BookingScreen() {
   return (
     <>
     <ScrollView style={[styles.container, { backgroundColor: theme.bg }]} showsVerticalScrollIndicator={false}>
-      {/* Header */}
-      <TouchableOpacity onPress={() => {
-        if (reschedule === 'true') {
-          router.replace('/home' as any);
-        } else {
-          router.back();
-        }
-      }} style={styles.backButton}>
-        <Text style={[styles.backText, { color: '#00A651' }]}>← Back</Text>
-      </TouchableOpacity>
-
-      <Text style={[styles.title, { color: theme.text }]}>Book Appointment</Text>
+      {/* Modern Gradient Header */}
+      <LinearGradient
+        colors={isDark ? ['#1E1E1E', '#0F0F0F'] : ['#FFFFFF', '#F5F5F5']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.headerGradient}
+      >
+        <TouchableOpacity onPress={() => {
+          if (reschedule === 'true') {
+            router.replace('/home' as any);
+          } else {
+            router.back();
+          }
+        }} style={styles.backButton}>
+          <Text style={[styles.backText, { color: isDark ? '#FFFFFF' : '#1A1A1A' }]}>← Back</Text>
+        </TouchableOpacity>
+      </LinearGradient>
 
       {/* Services Selection */}
-      <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: theme.text }]}>Select Service</Text>
+      <View style={[styles.section, { marginTop: 20 }]}>
+        <View style={[styles.sectionTitleCard, { 
+          backgroundColor: theme.cardBg,
+          shadowColor: '#ED1C24',
+          shadowOpacity: isDark ? 0.5 : 0.2,
+        }]}>
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>Select Service</Text>
+        </View>
         <View style={styles.optionsContainer}>
           {services.map((service) => {
             const isFullPackage = service.name.toLowerCase().includes('full package');
@@ -269,17 +284,34 @@ export default function BookingScreen() {
 
       {/* Barber Selection */}
       <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: theme.text }]}>Select Barber</Text>
+        <View style={[styles.sectionTitleCard, { 
+          backgroundColor: theme.cardBg,
+          shadowColor: '#00A651',
+          shadowOpacity: isDark ? 0.5 : 0.2,
+        }]}>
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>Select Barber</Text>
+        </View>
         <View style={styles.optionsContainer}>
           {barbers.map((barber) => (
             <TouchableOpacity
               key={barber.id}
               style={[
                 styles.optionButton,
-                { backgroundColor: selectedBarber === barber.id ? '#ED1C24' : theme.cardBg, borderColor: theme.cardBorder }
+                { backgroundColor: selectedBarber === barber.id ? '#00A651' : theme.cardBg, borderColor: theme.cardBorder }
               ]}
               onPress={() => setSelectedBarber(barber.id)}
             >
+              {barber.imageUrl ? (
+                <Image
+                  source={{ uri: barber.imageUrl }}
+                  style={styles.barberImage}
+                  resizeMode="cover"
+                />
+              ) : (
+                <View style={[styles.barberPlaceholder, { backgroundColor: selectedBarber === barber.id ? '#008A43' : '#00A651' }]}>
+                  <Text style={styles.barberPlaceholderText}>{barber.name.charAt(0)}</Text>
+                </View>
+              )}
               <Text style={[
                 styles.optionText,
                 { color: selectedBarber === barber.id ? '#FFFFFF' : theme.text }
@@ -293,7 +325,13 @@ export default function BookingScreen() {
 
       {/* Date Selection */}
       <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: theme.text }]}>Select Date</Text>
+        <View style={[styles.sectionTitleCard, { 
+          backgroundColor: theme.cardBg,
+          shadowColor: '#FF9500',
+          shadowOpacity: isDark ? 0.5 : 0.2,
+        }]}>
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>Select Date</Text>
+        </View>
         <ScrollView 
           horizontal 
           showsHorizontalScrollIndicator={false}
@@ -339,7 +377,13 @@ export default function BookingScreen() {
 
       {/* Time Selection */}
       <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: theme.text }]}>Select Time</Text>
+        <View style={[styles.sectionTitleCard, { 
+          backgroundColor: theme.cardBg,
+          shadowColor: '#00A651',
+          shadowOpacity: isDark ? 0.5 : 0.2,
+        }]}>
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>Select Time</Text>
+        </View>
         {loadingAvailability && <ActivityIndicator size="small" color="#ED1C24" style={{ marginBottom: 8 }} />}
         <View style={styles.timesGrid}>
           {timeSlots.map((time) => {
@@ -374,15 +418,22 @@ export default function BookingScreen() {
         </View>
       </View>
 
-      {/* Confirm Button */}
-      <TouchableOpacity 
+      {/* Modern Gradient Confirm Button */}
+      <LinearGradient
+        colors={['#ED1C24', '#C41018']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
         style={styles.confirmButton}
-        onPress={handleConfirm}
       >
-        <Text style={styles.confirmButtonText}>CONTINUE TO CONFIRM</Text>
-      </TouchableOpacity>
+        <TouchableOpacity 
+          style={styles.confirmButtonInner}
+          onPress={handleConfirm}
+        >
+          <Text style={styles.confirmButtonText}>CONFIRM BOOKING</Text>
+        </TouchableOpacity>
+      </LinearGradient>
 
-      <View style={{ height: 20 }} />
+      <View style={{ height: 30 }} />
     </ScrollView>
 
     <ThemeModal
@@ -399,95 +450,152 @@ export default function BookingScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
+  },
+  headerGradient: {
+    paddingTop: 50,
+    paddingBottom: 30,
+    paddingHorizontal: 20,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 5,
   },
   backButton: {
-    marginTop: 16,
-    marginBottom: 20,
+    alignSelf: 'flex-start',
   },
   backText: {
-    color: '#00A651',
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '600',
   },
-  title: {
-    fontSize: 24,
+  headerTitle: {
+    fontSize: 28,
     fontWeight: 'bold',
-    marginBottom: 24,
+    marginTop: 12,
   },
   section: {
-    marginBottom: 28,
+    marginBottom: 32,
+    paddingHorizontal: 20,
+  },
+  sectionTitleCard: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    marginBottom: 20,
+    alignSelf: 'center',
+    width: '90%',
+    alignItems: 'center',
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 10,
+    elevation: 6,
   },
   sectionTitle: {
-    fontSize: 14,
+    fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 12,
   },
   optionsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: 12,
   },
   optionButton: {
     flex: 1,
     minWidth: '45%',
-    borderRadius: 8,
-    padding: 12,
+    borderRadius: 16,
+    padding: 16,
     alignItems: 'center',
     borderWidth: 2,
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 3,
   },
   optionButtonActive: {
     backgroundColor: '#ED1C24',
     borderColor: '#ED1C24',
+    shadowColor: '#ED1C24',
+    shadowOpacity: 0.3,
   },
   serviceImage: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    marginBottom: 8,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    marginBottom: 12,
+  },
+  barberImage: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    marginBottom: 12,
+  },
+  barberPlaceholder: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    marginBottom: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  barberPlaceholderText: {
+    color: '#FFFFFF',
+    fontSize: 24,
+    fontWeight: 'bold',
   },
   optionText: {
     fontWeight: '600',
-    fontSize: 12,
+    fontSize: 14,
   },
   optionTextActive: {
     color: '#FFFFFF',
   },
   optionSubText: {
-    fontSize: 10,
-    marginTop: 4,
+    fontSize: 12,
+    marginTop: 6,
+    fontWeight: 'bold',
   },
   optionSubTextActive: {
     color: '#FFFFFF',
   },
   datesScroll: {
-    marginHorizontal: -16,
-    paddingHorizontal: 16,
+    marginHorizontal: -20,
+    paddingHorizontal: 20,
   },
   dateButton: {
-    width: 60,
-    height: 80,
-    borderRadius: 8,
+    width: 70,
+    height: 90,
+    borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 8,
+    marginRight: 12,
     borderWidth: 2,
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
   },
   dateButtonActive: {
     backgroundColor: '#ED1C24',
     borderColor: '#ED1C24',
+    shadowColor: '#ED1C24',
+    shadowOpacity: 0.3,
   },
   dateDay: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '600',
+    opacity: 0.8,
   },
   dateDayActive: {
     color: '#FFFFFF',
+    opacity: 1,
   },
   dateNum: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: 'bold',
-    marginTop: 4,
+    marginTop: 6,
   },
   dateNumActive: {
     color: '#FFFFFF',
@@ -495,42 +603,52 @@ const styles = StyleSheet.create({
   timesGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: 10,
   },
   timeButton: {
     flex: 1,
     minWidth: '30%',
-    borderRadius: 8,
-    paddingVertical: 12,
+    borderRadius: 12,
+    paddingVertical: 14,
     alignItems: 'center',
     borderWidth: 2,
+    shadowColor: '#000',
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
   },
   timeButtonActive: {
-    backgroundColor: '#00A651',
-    borderColor: '#00A651',
+    backgroundColor: '#ED1C24',
+    borderColor: '#ED1C24',
+    shadowColor: '#ED1C24',
+    shadowOpacity: 0.25,
   },
   timeText: {
     fontWeight: '600',
-    fontSize: 13,
+    fontSize: 14,
   },
   timeTextActive: {
     color: '#FFFFFF',
   },
   confirmButton: {
-    backgroundColor: '#ED1C24',
-    paddingVertical: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 16,
+    marginHorizontal: 20,
+    borderRadius: 16,
     shadowColor: '#ED1C24',
-    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 8,
+    marginTop: 24,
+  },
+  confirmButtonInner: {
+    paddingVertical: 18,
+    alignItems: 'center',
   },
   confirmButtonText: {
     color: '#FFFFFF',
     fontWeight: 'bold',
-    fontSize: 14,
+    fontSize: 16,
+    letterSpacing: 0.5,
   },
 });

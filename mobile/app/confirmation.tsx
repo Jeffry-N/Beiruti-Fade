@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, useColorScheme } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { bookAppointment, updateAppointmentDate } from '../api';
@@ -11,10 +12,11 @@ export default function ConfirmationScreen() {
   const isDark = colorScheme === 'dark';
   const theme = {
     bg: isDark ? '#1A1A1A' : '#FFFFFF',
-    text: isDark ? '#FFFFFF' : '#1A1A1A',
+    text: isDark ? '#FFFFFF' : '#000000',
     cardBg: isDark ? '#2A2A2A' : '#F5F5F5',
     cardBorder: isDark ? '#3A3A3A' : '#E0E0E0',
     subtext: isDark ? '#AAA' : '#666',
+    headerGradient: isDark ? ['#1E1E1E', '#0F0F0F'] : ['#FFFFFF', '#F5F5F5'],
   };
   
   const router = useRouter();
@@ -119,18 +121,27 @@ export default function ConfirmationScreen() {
     <>
     <View style={[styles.container, { backgroundColor: theme.bg }]}>
       {/* Header */}
-      <TouchableOpacity onPress={() => {
-        if (reschedule === 'true') {
-          router.replace('/home' as any);
-        } else {
-          router.back();
-        }
-      }} style={styles.backButton}>
-        <Text style={[styles.backText, { color: '#00A651' }]}>← Back</Text>
-      </TouchableOpacity>
+      <LinearGradient
+        colors={theme.headerGradient as any}
+        style={[styles.headerGradient, {
+          shadowColor: isDark ? '#000000' : '#00000030',
+          shadowOpacity: isDark ? 0.5 : 0.2,
+        }]}
+      >
+        <TouchableOpacity onPress={() => {
+          if (reschedule === 'true') {
+            router.replace('/home' as any);
+          } else {
+            router.back();
+          }
+        }} style={styles.backButtonHeader}>
+          <Text style={[styles.backButtonHeaderText, { color: theme.text }]}>← Back</Text>
+        </TouchableOpacity>
+      </LinearGradient>
 
       {/* Confirmation Card */}
-      <View style={[styles.card, { backgroundColor: theme.cardBg }]}>
+      <View style={styles.cardWrapper}>
+        <View style={[styles.card, { backgroundColor: theme.cardBg, borderColor: theme.cardBorder }]}>
         <Text style={[styles.title, { color: theme.text }]}>Booking Confirmation</Text>
 
         <View style={styles.detailsContainer}>
@@ -174,29 +185,46 @@ export default function ConfirmationScreen() {
         {/* Action Buttons */}
         <View style={styles.buttonContainer}>
           <TouchableOpacity 
-            style={styles.editButton}
+            style={styles.editButtonWrapper}
             onPress={handleEdit}
             disabled={isLoading}
+            activeOpacity={0.8}
           >
-            <Text style={styles.editButtonText}>EDIT</Text>
+            <LinearGradient
+              colors={['#00A651', '#008A43']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.editButton}
+            >
+              <Text style={styles.editButtonText}>EDIT</Text>
+            </LinearGradient>
           </TouchableOpacity>
 
           <TouchableOpacity 
-            style={[styles.confirmButton, isLoading && styles.confirmButtonDisabled]}
+            style={styles.confirmButtonWrapper}
             onPress={handleConfirm}
             disabled={isLoading}
+            activeOpacity={0.8}
           >
-            {isLoading ? (
-              <ActivityIndicator size="small" color="#FFFFFF" />
-            ) : (
-              <Text style={styles.confirmButtonText}>CONFIRM</Text>
-            )}
+            <LinearGradient
+              colors={['#ED1C24', '#C41018']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={[styles.confirmButton, isLoading && styles.confirmButtonDisabled]}
+            >
+              {isLoading ? (
+                <ActivityIndicator size="small" color="#FFFFFF" />
+              ) : (
+                <Text style={styles.confirmButtonText}>CONFIRM</Text>
+              )}
+            </LinearGradient>
           </TouchableOpacity>
         </View>
 
         <Text style={styles.disclaimer}>
           Please arrive 5 minutes before your appointment time
         </Text>
+      </View>
       </View>
     </View>
 
@@ -214,6 +242,25 @@ export default function ConfirmationScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  headerGradient: {
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 10,
+    elevation: 6,
+  },
+  backButtonHeader: {
+    alignSelf: 'flex-start',
+  },
+  backButtonHeaderText: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  cardWrapper: {
+    flex: 1,
     padding: 16,
     justifyContent: 'center',
   },
@@ -225,9 +272,14 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   card: {
-    borderRadius: 16,
+    borderRadius: 20,
     padding: 24,
     borderWidth: 1,
+    shadowColor: '#00A651',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+    elevation: 6,
   },
   title: {
     fontSize: 22,
@@ -262,30 +314,41 @@ const styles = StyleSheet.create({
     gap: 12,
     marginBottom: 20,
   },
-  editButton: {
+  editButtonWrapper: {
     flex: 1,
-    borderWidth: 2,
-    borderColor: '#00A651',
+    borderRadius: 12,
+    shadowColor: '#00A651',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 6,
+  },
+  editButton: {
     paddingVertical: 14,
-    borderRadius: 8,
+    borderRadius: 12,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   editButtonText: {
-    color: '#00A651',
+    color: '#FFFFFF',
     fontWeight: 'bold',
     fontSize: 14,
+    letterSpacing: 0.5,
+  },
+  confirmButtonWrapper: {
+    flex: 1,
+    borderRadius: 12,
+    shadowColor: '#ED1C24',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 6,
   },
   confirmButton: {
-    flex: 1,
-    backgroundColor: '#ED1C24',
     paddingVertical: 14,
-    borderRadius: 8,
+    borderRadius: 12,
     alignItems: 'center',
-    shadowColor: '#ED1C24',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 3,
+    justifyContent: 'center',
   },
   confirmButtonDisabled: {
     opacity: 0.6,
@@ -294,6 +357,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontWeight: 'bold',
     fontSize: 14,
+    letterSpacing: 0.5,
   },
   disclaimer: {
     color: '#666',

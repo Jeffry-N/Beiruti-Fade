@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator, useColorScheme } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getAppointments } from '../api';
 import ThemeModal from '../components/ThemeModal';
@@ -21,11 +22,11 @@ export default function AppointmentsScreen() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
   const theme = {
-    bg: isDark ? '#1A1A1A' : '#FFFFFF',
+    bg: isDark ? '#0F0F0F' : '#F8F9FA',
     text: isDark ? '#FFFFFF' : '#1A1A1A',
-    cardBg: isDark ? '#2A2A2A' : '#F5F5F5',
-    cardBorder: isDark ? '#3A3A3A' : '#E0E0E0',
-    subtext: isDark ? '#AAA' : '#666',
+    cardBg: isDark ? '#1E1E1E' : '#FFFFFF',
+    cardBorder: isDark ? '#2A2A2A' : '#E8E8E8',
+    subtext: isDark ? '#B0B0B0' : '#6B7280',
   };
   
   const router = useRouter();
@@ -185,21 +186,30 @@ export default function AppointmentsScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.bg }]}>
-      {/* Header */}
-      <View style={[styles.header, { borderBottomColor: theme.cardBorder }]}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Text style={styles.backText}>← Back</Text>
+      {/* Modern Gradient Header */}
+      <LinearGradient
+        colors={isDark ? ['#1E1E1E', '#0F0F0F'] : ['#FFFFFF', '#F5F5F5']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.headerGradient}
+      >
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <Text style={[styles.backText, { color: isDark ? '#FFFFFF' : '#1A1A1A' }]}>← Back</Text>
         </TouchableOpacity>
-        <Text style={[styles.title, { color: theme.text }]}>My Appointments</Text>
-        <View style={{ width: 40 }} />
-      </View>
+      </LinearGradient>
 
       {/* Appointments List */}
       <ScrollView showsVerticalScrollIndicator={false} style={styles.listContainer}>
         {/* Active Appointments */}
         {activeAppointments.length > 0 && (
-          <View>
-            <Text style={[styles.sectionTitle, { color: theme.text }]}>Active Appointments</Text>
+          <View style={styles.section}>
+            <View style={[styles.sectionTitleCard, { 
+              backgroundColor: theme.cardBg,
+              shadowColor: '#FF9500',
+              shadowOpacity: isDark ? 0.5 : 0.2,
+            }]}>
+              <Text style={[styles.sectionTitle, { color: theme.text }]}>Active Appointments</Text>
+            </View>
             {activeAppointments.map((appointment) => (
             <View key={appointment.id} style={[styles.appointmentCard, { backgroundColor: theme.cardBg, borderColor: theme.cardBorder }]}>
               <View style={styles.appointmentHeader}>
@@ -252,7 +262,7 @@ export default function AppointmentsScreen() {
                   <Text style={styles.actionButtonText}>Reschedule</Text>
                 </TouchableOpacity>
                 <TouchableOpacity 
-                  style={[styles.actionButton, styles.cancelButton]}
+                  style={[styles.actionButton, styles.cancelButton, { borderColor: isDark ? '#FF4444' : '#ED1C24' }]}
                   onPress={() => {
                     alert('Cancel Appointment', 'Are you sure you want to cancel this appointment?', [
                       { text: 'No', style: 'cancel', onPress: () => {} },
@@ -283,7 +293,7 @@ export default function AppointmentsScreen() {
                     ]);
                   }}
                 >
-                  <Text style={styles.cancelButtonText}>Cancel</Text>
+                  <Text style={[styles.cancelButtonText, { color: isDark ? '#FF4444' : '#ED1C24' }]}>Cancel</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -293,14 +303,20 @@ export default function AppointmentsScreen() {
         
         {/* Completed Appointments */}
         {completedAppointments.length > 0 && (
-          <View>
-            <Text style={[styles.sectionTitle, { color: theme.text }]}>Completed Appointments</Text>
+          <View style={styles.section}>
+            <View style={[styles.sectionTitleCard, { 
+              backgroundColor: theme.cardBg,
+              shadowColor: '#00A651',
+              shadowOpacity: isDark ? 0.5 : 0.2,
+            }]}>
+              <Text style={[styles.sectionTitle, { color: theme.text }]}>Completed Appointments</Text>
+            </View>
             {completedAppointments.map((appointment) => (
               <View key={appointment.id} style={[styles.appointmentCard, { backgroundColor: theme.cardBg, borderColor: theme.cardBorder }]}>
                 <View style={styles.appointmentHeader}>
                   <Text style={styles.barberName}>{appointment.barberName}</Text>
                   <View style={[styles.statusBadge, { backgroundColor: getStatusColor(appointment.status) }]}>
-                    <Text style={styles.statusText}>COMPLETED</Text>
+                    <Text style={[styles.statusText, { color: '#FFFFFF' }]}>COMPLETED</Text>
                   </View>
                 </View>
                 <Text style={[styles.serviceText, { color: theme.text }]}>{appointment.serviceName}</Text>
@@ -312,14 +328,20 @@ export default function AppointmentsScreen() {
         
         {/* Cancelled Appointments */}
         {cancelledAppointments.length > 0 && (
-          <View>
-            <Text style={[styles.sectionTitle, { color: theme.text }]}>Cancelled Appointments</Text>
+          <View style={styles.section}>
+            <View style={[styles.sectionTitleCard, { 
+              backgroundColor: theme.cardBg,
+              shadowColor: '#ED1C24',
+              shadowOpacity: isDark ? 0.5 : 0.2,
+            }]}>
+              <Text style={[styles.sectionTitle, { color: theme.text }]}>Cancelled Appointments</Text>
+            </View>
             {cancelledAppointments.map((appointment) => (
               <View key={appointment.id} style={[styles.appointmentCard, { backgroundColor: theme.cardBg, borderColor: theme.cardBorder }]}>
                 <View style={styles.appointmentHeader}>
                   <Text style={styles.barberName}>{appointment.barberName}</Text>
                   <View style={[styles.statusBadge, { backgroundColor: getStatusColor(appointment.status) }]}>
-                    <Text style={styles.statusText}>CANCELLED</Text>
+                    <Text style={[styles.statusText, { color: '#FFFFFF' }]}>CANCELLED</Text>
                   </View>
                 </View>
                 <Text style={[styles.serviceText, { color: theme.text }]}>{appointment.serviceName}</Text>
@@ -361,65 +383,70 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 16,
-    paddingTop: 20,
-    borderBottomWidth: 1,
+  headerGradient: {
+    paddingTop: 50,
+    paddingBottom: 30,
+    paddingHorizontal: 20,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 5,
+  },
+  headerContent: {
+    alignItems: 'flex-start',
+  },
+  backButton: {
+    marginBottom: 12,
   },
   backText: {
-    color: '#00A651',
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '600',
   },
-  title: {
-    fontSize: 18,
+  headerTitle: {
+    fontSize: 28,
     fontWeight: 'bold',
   },
   listContainer: {
     flex: 1,
-    paddingHorizontal: 16,
+    paddingTop: 20,
+  },
+  section: {
+    marginBottom: 24,
+  },
+  sectionTitleCard: {
+    marginHorizontal: 20,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    borderRadius: 16,
+    marginBottom: 16,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E8E8E8',
+    shadowColor: '#000',
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 3,
   },
   sectionTitle: {
     fontSize: 16,
-    fontWeight: 'bold',
-    marginTop: 12,
-    marginBottom: 12,
-  },
-  
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 60,
-  },
-  emptyText: {
-    fontSize: 16,
-    marginBottom: 20,
-  },
-  bookButton: {
-    backgroundColor: '#ED1C24',
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-    shadowColor: '#ED1C24',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  bookButtonText: {
-    color: '#FFFFFF',
-    fontWeight: 'bold',
-    fontSize: 14,
+    fontWeight: '700',
+    letterSpacing: 0.2,
   },
   appointmentCard: {
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
+    borderRadius: 20,
+    padding: 20,
+    marginBottom: 16,
+    marginHorizontal: 20,
     borderWidth: 1,
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 4,
   },
   appointmentHeader: {
     flexDirection: 'row',
@@ -429,67 +456,105 @@ const styles = StyleSheet.create({
   },
   barberName: {
     color: '#ED1C24',
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
   },
   statusBadge: {
     paddingHorizontal: 10,
-    paddingVertical: 4,
+    paddingVertical: 6,
     borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E8E8E8',
+    backgroundColor: '#FFFFFF',
   },
   statusText: {
-    fontSize: 10,
-    fontWeight: 'bold',
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#1A1A1A',
   },
   appointmentDetails: {
     marginBottom: 16,
   },
   detailItem: {
-    marginBottom: 10,
+    marginBottom: 12,
   },
   detailLabel: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '600',
-    marginBottom: 4,
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
   },
   detailValue: {
-    fontSize: 13,
-    fontWeight: '500',
+    fontSize: 14,
+    fontWeight: '600',
+    marginTop: 2,
   },
   appointmentActions: {
     flexDirection: 'row',
-    gap: 8,
+    gap: 12,
   },
   actionButton: {
     flex: 1,
-    backgroundColor: '#00A651',
-    paddingVertical: 10,
-    borderRadius: 6,
+    paddingVertical: 12,
+    borderRadius: 12,
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E8E8E8',
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 3,
   },
   actionButtonText: {
-    color: '#FFFFFF',
-    fontWeight: 'bold',
-    fontSize: 12,
+    color: '#1A1A1A',
+    fontWeight: '700',
+    fontSize: 13,
+    letterSpacing: 0.3,
   },
   cancelButton: {
-    backgroundColor: 'transparent',
     borderWidth: 1,
-    borderColor: '#FF4444',
+    backgroundColor: '#FFF5F5',
+    borderColor: '#ED1C24',
   },
   cancelButtonText: {
-    color: '#FF4444',
-    fontWeight: 'bold',
-    fontSize: 12,
+    fontWeight: '700',
+    color: '#ED1C24',
+    fontSize: 13,
   },
   serviceText: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '500',
-    marginBottom: 4,
+    marginBottom: 6,
   },
   dateText: {
-    fontSize: 12,
+    fontSize: 13,
     marginTop: 4,
   },
-  
+  emptyContainer: {
+    alignItems: 'center',
+    marginTop: 80,
+  },
+  emptyText: {
+    fontSize: 15,
+    marginBottom: 12,
+    fontWeight: '600',
+  },
+  bookButton: {
+    backgroundColor: '#ED1C24',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    shadowColor: '#ED1C24',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  bookButtonText: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+    fontSize: 14,
+  },
 });

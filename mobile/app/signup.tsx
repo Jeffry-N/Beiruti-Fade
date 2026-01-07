@@ -13,11 +13,12 @@ export default function SignupScreen() {
   const isDark = colorScheme === 'dark';
   const theme = {
     bg: isDark ? '#1A1A1A' : '#FFFFFF',
-    text: isDark ? '#FFFFFF' : '#1A1A1A',
+    text: isDark ? '#FFFFFF' : '#000000',
     input: isDark ? '#2A2A2A' : '#F5F5F5',
     inputBorder: isDark ? '#3A3A3A' : '#E0E0E0',
     placeholder: isDark ? '#888' : '#666',
     subtext: isDark ? '#AAA' : '#666',
+    cardBg: isDark ? '#2A2A2A' : '#F5F5F5',
   };
   
   const router = useRouter();
@@ -196,8 +197,8 @@ const styles = StyleSheet.create({
     shadowColor: '#ED1C24',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
-    shadowRadius: 5,
-    elevation: 8,
+    shadowRadius: 10,
+    elevation: 6,
   },
   buttonDisabled: {
     opacity: 0.6,

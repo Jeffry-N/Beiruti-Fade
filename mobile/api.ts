@@ -34,15 +34,25 @@ export const apiCall = async <T>(
     const data = await response.json();
 
     if (!response.ok) {
-      return { success: false, error: data.error || 'Unknown error' };
+      return { success: false, error: data?.error || 'Unknown error' };
     }
 
-    // If response is an array (e.g., from availability endpoint), wrap it
+    // Arrays come back directly from some endpoints (e.g., services)
     if (Array.isArray(data)) {
       return { success: true, data: data as T };
     }
 
-    return { success: true, data };
+    // Many endpoints wrap payloads as { success, data, error }
+    if (data && typeof data === 'object' && 'success' in data) {
+      const typed = data as { success?: boolean; data?: T; error?: string };
+      if (typed.success === false) {
+        return { success: false, error: typed.error || 'Unknown error' };
+      }
+      const inner = typed.data !== undefined ? typed.data : (data as T);
+      return { success: true, data: inner };
+    }
+
+    return { success: true, data: data as T };
   } catch (error) {
     return {
       success: false,
@@ -105,3 +115,11 @@ export const getProfile = (id: number, type: 'customer' | 'barber') =>
 
 export const getAvailableTimes = (barberId: number, date: string) =>
   apiCall(`/appointment/availability?barberId=${barberId}&date=${date}`, 'GET');
+
+export const getProducts = () => apiCall('/products', 'GET');
+
+export const orderProduct = (customerId: number, productId: number, quantity: number = 1) =>
+  apiCall('/products/order', 'POST', { customerId, productId, quantity });
+
+export const getProductOrders = (customerId: number) =>
+  apiCall(`/products/orders?customerId=${customerId}`, 'GET');

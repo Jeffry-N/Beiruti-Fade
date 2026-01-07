@@ -19,10 +19,11 @@ export default function LoginScreen() {
   const isDark = colorScheme === 'dark';
   const theme = {
     bg: isDark ? '#1A1A1A' : '#FFFFFF',
-    text: isDark ? '#FFFFFF' : '#1A1A1A',
+    text: isDark ? '#FFFFFF' : '#000000',
     input: isDark ? '#2A2A2A' : '#F5F5F5',
     inputBorder: isDark ? '#3A3A3A' : '#E0E0E0',
     placeholder: isDark ? '#888' : '#666',
+    cardBg: isDark ? '#2A2A2A' : '#F5F5F5',
   };
   
   const router = useRouter();
@@ -142,10 +143,20 @@ const styles = StyleSheet.create({
   },
   logoImage: { width: 220, height: 220 },
   inputContainer: { marginBottom: 20 },
-  input: { backgroundColor: '#F5F5F5', color: '#1A1A1A', padding: 15, borderRadius: 8, marginBottom: 15, fontSize: 16, borderWidth: 1, borderColor: '#E0E0E0' },
+  input: { backgroundColor: '#F5F5F5', color: '#1A1A1A', padding: 15, borderRadius: 12, marginBottom: 15, fontSize: 16, borderWidth: 1, borderColor: '#E0E0E0' },
   roleSelector: { alignItems: 'center', marginBottom: 25 },
   roleText: { color: '#1A1A1A', fontSize: 14, fontWeight: '600' },
-  button: { backgroundColor: '#ED1C24', padding: 18, borderRadius: 8, alignItems: 'center', shadowColor: '#ED1C24', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.3, shadowRadius: 4, elevation: 5 },
+  button: { 
+    backgroundColor: '#ED1C24', 
+    padding: 18, 
+    borderRadius: 12, 
+    alignItems: 'center', 
+    shadowColor: '#ED1C24', 
+    shadowOffset: { width: 0, height: 4 }, 
+    shadowOpacity: 0.3, 
+    shadowRadius: 10, 
+    elevation: 6 
+  },
   buttonDisabled: { opacity: 0.6 },
   buttonText: { color: '#FFFFFF', fontWeight: 'bold', fontSize: 16 },
   linkText: { color: '#666', textAlign: 'center', marginTop: 25, fontSize: 14 }

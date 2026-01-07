@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator, useColorScheme } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator, Image, useColorScheme } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getBarberAppointments, updateAppointmentStatus } from '../api';
 import ThemeModal from '../components/ThemeModal';
@@ -29,11 +30,11 @@ export default function BarberHomeScreen() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
   const theme = {
-    bg: isDark ? '#1A1A1A' : '#FFFFFF',
+    bg: isDark ? '#0F0F0F' : '#F8F9FA',
     text: isDark ? '#FFFFFF' : '#1A1A1A',
-    cardBg: isDark ? '#2A2A2A' : '#F5F5F5',
-    cardBorder: isDark ? '#3A3A3A' : '#E0E0E0',
-    subtext: isDark ? '#AAA' : '#666',
+    cardBg: isDark ? '#1E1E1E' : '#FFFFFF',
+    cardBorder: isDark ? '#2A2A2A' : '#E8E8E8',
+    subtext: isDark ? '#B0B0B0' : '#6B7280',
   };
   
   const router = useRouter();
@@ -223,38 +224,82 @@ export default function BarberHomeScreen() {
   return (
     <>
     <ScrollView style={[styles.container, { backgroundColor: theme.bg }]} showsVerticalScrollIndicator={false}>
-      {/* Header */}
-      <View style={styles.header}>
-        <View>
-          <Text style={[styles.greeting, { color: '#00A651' }]}>Welcome back</Text>
-          <Text style={[styles.userName, { color: theme.text }]}>{user?.name || 'Barber'}</Text>
-          <TouchableOpacity onPress={() => router.push('/profile-edit' as any)}>
-            <Text style={styles.editLink}>✎ Edit Profile</Text>
+      {/* Modern Gradient Header */}
+      <LinearGradient
+        colors={isDark ? ['#1E1E1E', '#0F0F0F'] : ['#FFFFFF', '#F5F5F5']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.headerGradient}
+      >
+        <View style={styles.headerContent}>
+          <View style={styles.headerLeft}>
+            <Text style={[styles.greeting, { color: isDark ? '#FFFFFF' : '#1A1A1A' }]}>Welcome back</Text>
+            <Text style={[styles.userName, { color: isDark ? '#FFFFFF' : '#1A1A1A' }]}>{user?.name || 'Barber'}</Text>
+          </View>
+          <Image 
+            source={require('../assets/images/beiruti-logo.png')} 
+            style={styles.headerLogo}
+            resizeMode="contain"
+          />
+        </View>
+      </LinearGradient>
+
+      {/* Quick Actions Card */}
+      <View style={styles.quickActionsWrapper}>
+        <View style={styles.quickActionsRow}>
+          <TouchableOpacity 
+            style={[styles.quickActionCard, {
+              backgroundColor: theme.cardBg,
+              shadowColor: '#00A651',
+              shadowOpacity: isDark ? 0.5 : 0.2,
+            }]}
+            onPress={() => router.push('/profile-edit')}
+          >
+            <Text style={[styles.quickActionTitle, { color: theme.text }]}>Edit Profile</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={[styles.quickActionCard, {
+              backgroundColor: theme.cardBg,
+              shadowColor: '#ED1C24',
+              shadowOpacity: isDark ? 0.5 : 0.2,
+            }]}
+            onPress={handleLogout}
+          >
+            <Text style={[styles.quickActionTitle, { color: theme.text }]}>Logout</Text>
           </TouchableOpacity>
         </View>
-        <TouchableOpacity 
-          style={styles.logoutButtonHeader}
-          onPress={handleLogout}
-        >
-          <Text style={styles.logoutTextHeader}>Logout</Text>
-        </TouchableOpacity>
       </View>
 
-      {/* Stats */}
+      {/* Modern Stats Cards */}
       <View style={styles.statsContainer}>
-        <View style={[styles.statCard, { backgroundColor: theme.cardBg, borderColor: theme.cardBorder }]}>
-          <Text style={[styles.statNumber, { color: '#ED1C24' }]}>{pendingCount}</Text>
-          <Text style={[styles.statLabel, { color: theme.subtext }]}>Pending</Text>
+        <View style={[styles.statCard, {
+          backgroundColor: theme.cardBg,
+          shadowColor: '#FF9500',
+          shadowOpacity: isDark ? 0.5 : 0.2,
+        }]}>
+          <Text style={[styles.statNumber, { color: theme.text }]}>{pendingCount}</Text>
+          <Text style={[styles.statLabel, { color: theme.text }]}>Pending</Text>
         </View>
-        <View style={[styles.statCard, { backgroundColor: theme.cardBg, borderColor: theme.cardBorder }]}>
-          <Text style={[styles.statNumber, { color: '#ED1C24' }]}>{confirmedCount}</Text>
-          <Text style={[styles.statLabel, { color: theme.subtext }]}>Confirmed</Text>
+        <View style={[styles.statCard, {
+          backgroundColor: theme.cardBg,
+          shadowColor: '#00A651',
+          shadowOpacity: isDark ? 0.5 : 0.2,
+        }]}>
+          <Text style={[styles.statNumber, { color: theme.text }]}>{confirmedCount}</Text>
+          <Text style={[styles.statLabel, { color: theme.text }]}>Confirmed</Text>
         </View>
       </View>
 
       {/* Pending Appointments */}
       <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: theme.text }]}>Pending Appointments</Text>
+        <View style={[styles.sectionTitleCard, { 
+          backgroundColor: theme.cardBg,
+          shadowColor: '#FF9500',
+          shadowOpacity: isDark ? 0.5 : 0.2,
+        }]}>
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>Pending Appointments</Text>
+        </View>
         {getPendingAppointments().length === 0 ? (
           <Text style={[styles.emptyText, { color: theme.subtext }]}>No pending appointments</Text>
         ) : (
@@ -295,7 +340,13 @@ export default function BarberHomeScreen() {
 
       {/* Confirmed Appointments */}
       <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: theme.text }]}>Confirmed Appointments</Text>
+        <View style={[styles.sectionTitleCard, { 
+          backgroundColor: theme.cardBg,
+          shadowColor: '#00A651',
+          shadowOpacity: isDark ? 0.5 : 0.2,
+        }]}>
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>Confirmed Appointments</Text>
+        </View>
         {getConfirmedAppointments().length === 0 ? (
           <Text style={[styles.emptyText, { color: theme.subtext }]}>No confirmed appointments</Text>
         ) : (
@@ -351,19 +402,25 @@ export default function BarberHomeScreen() {
       {/* Completed Appointments (Grouped by Date) */}
       {getCompletedByDate().length > 0 && (
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: theme.text }]}>Completed Appointments</Text>
+          <View style={[styles.sectionTitleCard, { 
+            backgroundColor: theme.cardBg,
+            shadowColor: '#00A651',
+            shadowOpacity: isDark ? 0.5 : 0.2,
+          }]}>
+            <Text style={[styles.sectionTitle, { color: theme.text }]}>Completed Appointments</Text>
+          </View>
           {getCompletedByDate().map(({ date, appointments }) => (
             <View key={date}>
               <Text style={[styles.dateHeader, { color: theme.subtext }]}>{formatDate(date)}</Text>
               {appointments.map((appointment) => (
-                <View key={appointment.id} style={[styles.appointmentCard, { backgroundColor: theme.cardBg, borderColor: theme.cardBorder }]}>
+                <View key={appointment.id} style={[styles.appointmentCard, styles.completedCard, { backgroundColor: theme.cardBg, borderColor: theme.cardBorder }]}>
                   <View style={styles.appointmentHeader}>
                     <View>
                       <Text style={[styles.customerName, { color: theme.text }]}>{appointment.customerName}</Text>
                       <Text style={[styles.serviceText, { color: theme.subtext }]}>{appointment.serviceName}</Text>
                     </View>
                     <View style={[styles.statusBadge, { backgroundColor: '#00D084' }]}>
-                      <Text style={styles.statusText}>COMPLETED</Text>
+                      <Text style={[styles.statusText, { color: '#FFFFFF' }]}>COMPLETED</Text>
                     </View>
                   </View>
                   <Text style={[styles.timeText, { color: theme.subtext }]}>{appointment.time}</Text>
@@ -391,8 +448,25 @@ export default function BarberHomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
-    padding: 16,
+  },
+  headerGradient: {
+    paddingTop: 50,
+    paddingBottom: 30,
+    paddingHorizontal: 20,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+  },
+  headerContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  headerLeft: {
+    flex: 1,
+  },
+  headerLogo: {
+    width: 60,
+    height: 60,
   },
   header: {
     flexDirection: 'row',
@@ -402,13 +476,12 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   greeting: {
-    color: '#00A651',
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 16,
+    opacity: 0.9,
+    fontWeight: '500',
   },
   userName: {
-    color: '#1A1A1A',
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
     marginTop: 4,
   },
@@ -418,16 +491,28 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginTop: 4,
   },
-  logoutButtonHeader: {
-    backgroundColor: '#ED1C24',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 6,
+  quickActionsWrapper: {
+    padding: 20,
+    gap: 12,
   },
-  logoutTextHeader: {
-    color: '#FFFFFF',
+  quickActionsRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  quickActionCard: {
+    flex: 1,
+    padding: 24,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 6,
+  },
+  quickActionTitle: {
+    fontSize: 15,
     fontWeight: 'bold',
-    fontSize: 12,
   },
   menuButton: {
     padding: 8,
@@ -438,147 +523,180 @@ const styles = StyleSheet.create({
   },
   statsContainer: {
     flexDirection: 'row',
-    gap: 12,
-    marginBottom: 24,
+    gap: 16,
+    paddingHorizontal: 20,
+    marginTop: 20,
+    marginBottom: 32,
   },
   statCard: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: 20,
+    padding: 24,
     alignItems: 'center',
-    borderLeftWidth: 4,
-    borderLeftColor: '#ED1C24',
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 6,
   },
   statNumber: {
-    color: '#ED1C24',
-    fontSize: 28,
+    fontSize: 36,
     fontWeight: 'bold',
   },
   statLabel: {
-    color: '#666',
-    fontSize: 12,
-    marginTop: 6,
+    fontSize: 13,
+    marginTop: 8,
     fontWeight: '600',
+    opacity: 0.95,
   },
   section: {
-    marginBottom: 24,
+    marginBottom: 32,
+    paddingHorizontal: 20,
+  },
+  sectionTitleCard: {
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+    marginBottom: 16,
+    alignItems: 'center',
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 6,
   },
   sectionTitle: {
-    color: '#1A1A1A',
     fontSize: 16,
     fontWeight: 'bold',
-    marginBottom: 12,
   },
   dateHeader: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '600',
-    marginTop: 8,
-    marginBottom: 8,
+    marginTop: 12,
+    marginBottom: 12,
+    color: '#6B7280',
   },
   emptyText: {
     color: '#666',
     fontSize: 14,
     textAlign: 'center',
-    paddingVertical: 20,
+    paddingVertical: 40,
   },
   appointmentCard: {
     backgroundColor: '#F5F5F5',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    borderLeftWidth: 4,
+    borderRadius: 20,
+    padding: 20,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 4,
+    borderLeftWidth: 5,
     borderLeftColor: '#FFB800',
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
   },
   confirmedCard: {
+    borderLeftColor: '#00A651',
+  },
+  completedCard: {
     borderLeftColor: '#00A651',
   },
   appointmentHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 16,
   },
   serviceName: {
     color: '#ED1C24',
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
   },
   statusBadge: {
     backgroundColor: '#FFB800',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
   },
   confirmedBadge: {
     backgroundColor: '#00A651',
   },
   statusText: {
     color: '#000',
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: 'bold',
   },
   confirmedStatusText: {
     color: '#FFF',
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: 'bold',
   },
   appointmentDetails: {
-    marginBottom: 12,
+    marginBottom: 16,
   },
   detailLabel: {
     color: '#666',
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '600',
     marginBottom: 4,
   },
   detailValue: {
     color: '#1A1A1A',
-    fontSize: 13,
+    fontSize: 15,
     fontWeight: '500',
   },
   appointmentActions: {
     flexDirection: 'row',
-    gap: 8,
+    gap: 12,
   },
   acceptButton: {
     flex: 1,
     backgroundColor: '#00A651',
-    paddingVertical: 10,
-    borderRadius: 6,
+    paddingVertical: 12,
+    borderRadius: 12,
     alignItems: 'center',
+    shadowColor: '#00A651',
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 3,
   },
   acceptButtonText: {
     color: '#FFFFFF',
     fontWeight: 'bold',
-    fontSize: 12,
+    fontSize: 13,
   },
   rejectButton: {
     flex: 1,
     backgroundColor: '#FF4444',
-    paddingVertical: 10,
-    borderRadius: 6,
+    paddingVertical: 12,
+    borderRadius: 12,
     alignItems: 'center',
+    shadowColor: '#FF4444',
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 3,
   },
   rejectButtonText: {
     color: '#FFFFFF',
     fontWeight: 'bold',
-    fontSize: 12,
+    fontSize: 13,
   },
   completeButton: {
     backgroundColor: '#ED1C24',
-    paddingVertical: 10,
-    borderRadius: 6,
+    paddingVertical: 12,
+    borderRadius: 12,
     alignItems: 'center',
+    shadowColor: '#ED1C24',
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 3,
   },
   completeButtonText: {
     color: '#FFFFFF',
     fontWeight: 'bold',
-    fontSize: 12,
+    fontSize: 13,
   },
   logoutButton: {
     borderWidth: 2,
@@ -591,5 +709,17 @@ const styles = StyleSheet.create({
     color: '#ED1C24',
     fontWeight: 'bold',
     fontSize: 14,
+  },
+  customerName: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  serviceText: {
+    fontSize: 12,
+    marginBottom: 4,
+  },
+  timeText: {
+    fontSize: 12,
   },
 });
