@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator, Image, useColorScheme } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { getServices, getBarbers, getAppointments } from '../api';
+import { getServices, getBarbers, getAppointments, updateAppointmentStatus } from '../api';
 import ThemeModal from '../components/ThemeModal';
 import { useThemeAlert } from '../hooks/useThemeAlert';
 import { LinearGradient as ExpoLinearGradient } from 'expo-linear-gradient';
@@ -159,6 +159,31 @@ export default function HomeScreen() {
       refreshAppointments();
     }, [])
   );
+
+  const handleCancelAppointment = async (appointmentId: number) => {
+    try {
+      const result = await updateAppointmentStatus(appointmentId, 'cancelled');
+      if (result.success) {
+        // Refresh appointments after cancellation
+        const userData = await AsyncStorage.getItem('user');
+        if (userData) {
+          const parsedUser = JSON.parse(userData);
+          const apptResult = await getAppointments(parsedUser.id);
+          if (apptResult.success && Array.isArray(apptResult.data)) {
+            const raw = apptResult.data as any[];
+            const active = raw.filter(apt => apt.status === 'pending' || apt.status === 'confirmed');
+            const completed = raw.filter(apt => apt.status === 'completed');
+            const cancelled = raw.filter(apt => apt.status === 'cancelled');
+            setActiveAppointments(active as Appointment[]);
+            setCompletedAppointments(completed as Appointment[]);
+            setCancelledAppointments(cancelled as Appointment[]);
+          }
+        }
+      }
+    } catch (error) {
+      alert('Error', 'Failed to cancel appointment');
+    }
+  };
 
   if (isLoading) {
     return (
@@ -393,6 +418,14 @@ export default function HomeScreen() {
                         </View>
                         <Text style={[styles.appointmentService, { color: theme.text }]}>{apt.serviceName}</Text>
                         <Text style={[styles.appointmentMeta, { color: theme.subtext }]}>{apt.date} • {apt.time}</Text>
+                        <View style={styles.appointmentActionsHome}>
+                          <TouchableOpacity style={[styles.appointmentActionButton, { borderColor: '#00A651', backgroundColor: '#00A651' }]} onPress={() => router.push({ pathname: '/booking', params: { barberId: String(apt.barberId), serviceId: '0', reschedulingId: String(apt.id) } } as any)}>
+                            <Text style={styles.appointmentActionReschedule}>Reschedule</Text>
+                          </TouchableOpacity>
+                          <TouchableOpacity style={[styles.appointmentActionButton, { borderColor: '#ED1C24', backgroundColor: '#ED1C24' }]} onPress={() => alert('Cancel Appointment', 'Are you sure you want to cancel this appointment?', [{ text: 'No' }, { text: 'Yes', onPress: () => handleCancelAppointment(apt.id) }])}>
+                            <Text style={styles.appointmentActionCancel}>Cancel</Text>
+                          </TouchableOpacity>
+                        </View>
                       </View>
                     ))}
                   </View>
@@ -812,6 +845,29 @@ const styles = StyleSheet.create({
   appointmentMeta: {
     fontSize: 12,
     fontWeight: '600',
+    marginBottom: 12,
+  },
+  appointmentActionsHome: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 8,
+  },
+  appointmentActionButton: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    alignItems: 'center',
+  },
+  appointmentActionReschedule: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+    fontSize: 12,
+  },
+  appointmentActionCancel: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+    fontSize: 12,
   },
   appointmentsViewAll: {
     marginTop: 4,

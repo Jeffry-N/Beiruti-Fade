@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, useColorSc
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { bookAppointment, updateAppointmentDate } from '../api';
+import { bookAppointment, updateAppointmentDate, updateAppointmentStatus } from '../api';
 import ThemeModal from '../components/ThemeModal';
 import { useThemeAlert } from '../hooks/useThemeAlert';
 
@@ -20,7 +20,7 @@ export default function ConfirmationScreen() {
   };
   
   const router = useRouter();
-  const { serviceIds, barberId, date, time, serviceName, barberName, totalPrice, appointmentIds, reschedule } = useLocalSearchParams();
+  const { serviceIds, barberId, date, time, serviceName, barberName, totalPrice, appointmentIds, reschedule, reschedulingId } = useLocalSearchParams();
   const [isLoading, setIsLoading] = useState(false);
   const { visible, config, hide, alert } = useThemeAlert();
   const [user, setUser] = useState<any>(null);
@@ -44,8 +44,37 @@ export default function ConfirmationScreen() {
     setIsLoading(true);
     
     try {
-      // If this is a reschedule, update the existing appointment(s)
-      if (reschedule === 'true' && appointmentIds) {
+      // If this is a reschedule, cancel the old appointment and book a new one
+      if (reschedulingId) {
+        // Cancel the old appointment
+        const cancelResult = await updateAppointmentStatus(Number(reschedulingId), 'cancelled');
+        if (!cancelResult.success) {
+          throw new Error('Failed to cancel old appointment');
+        }
+
+        // Book the new appointment(s)
+        const serviceIdArray = String(serviceIds).split(',').map(id => Number(id));
+        for (const serviceId of serviceIdArray) {
+          const result = await bookAppointment(
+            user.id,
+            Number(barberId),
+            serviceId,
+            String(date),
+            String(time)
+          );
+          if (!result.success) {
+            throw new Error(result.error || 'Failed to book new appointment');
+          }
+        }
+
+        setIsLoading(false);
+        alert('Success', 'Appointment rescheduled successfully!', [
+          {
+            text: 'OK',
+            onPress: () => router.replace('/home' as any),
+          },
+        ]);
+      } else if (reschedule === 'true' && appointmentIds) {
         const appointmentIdArray = String(appointmentIds).split(',').map(id => Number(id));
         const serviceIdArray = String(serviceIds).split(',').map(id => Number(id));
 

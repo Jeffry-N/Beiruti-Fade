@@ -48,7 +48,7 @@ export default function BookingScreen() {
   };
   
   const router = useRouter();
-  const { serviceId: initialServiceId, barberId: initialBarberId, appointmentIds, reschedule } = useLocalSearchParams();
+  const { serviceId: initialServiceId, barberId: initialBarberId, appointmentIds, reschedule, reschedulingId } = useLocalSearchParams();
   
   const [selectedServices, setSelectedServices] = useState<number[]>(
     initialServiceId ? [Number(initialServiceId)] : []
@@ -76,7 +76,12 @@ export default function BookingScreen() {
   };
 
   // Check if a time slot is available (not booked and not in the past)
+  // When rescheduling, we allow booking the same time since the old appointment will be cancelled
   const isTimeAvailable = (timeStr: string): boolean => {
+    if (reschedulingId) {
+      // During reschedule, only check if time is in the past
+      return !isTimePast(selectedDate, timeStr);
+    }
     return !bookedTimes.includes(timeStr) && !isTimePast(selectedDate, timeStr);
   };
 
@@ -185,6 +190,7 @@ export default function BookingScreen() {
         totalPrice: totalPrice.toString(),
         ...(appointmentIds && { appointmentIds: appointmentIds }),
         ...(reschedule && { reschedule: reschedule }),
+        ...(reschedulingId && { reschedulingId: reschedulingId }),
       }
     } as any);
   };
