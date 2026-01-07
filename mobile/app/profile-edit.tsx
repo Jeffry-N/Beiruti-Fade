@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, useColorScheme, KeyboardAvoidingView, Platform, ScrollView, ToastAndroid } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import { LinearGradient as ExpoLinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { updateProfile, getProfile } from '../api';
@@ -24,6 +24,7 @@ export default function ProfileEditScreen() {
     placeholder: isDark ? '#888' : '#666',
     subtext: isDark ? '#B0B0B0' : '#6B7280',
     cardBg: isDark ? '#1E1E1E' : '#FFFFFF',
+    cardBorder: isDark ? '#2A2A2A' : '#E8E8E8',
     headerGradient: isDark ? ['#1E1E1E', '#0F0F0F'] : ['#FFFFFF', '#F5F5F5'],
   };
 
@@ -130,19 +131,19 @@ export default function ProfileEditScreen() {
   return (
     <>
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{flex:1}}>
-      <ScrollView style={[styles.container, { backgroundColor: theme.bg }]} contentContainerStyle={{padding:16}}>
-        <LinearGradient
-          colors={theme.headerGradient as any}
-          style={[styles.headerGradient, {
-            shadowColor: isDark ? '#000000' : '#00000030',
-            shadowOpacity: isDark ? 0.5 : 0.2,
-          }]}
+      <View style={[styles.container, { backgroundColor: theme.bg }]}>
+        <ExpoLinearGradient
+          colors={isDark ? ['#1E1E1E', '#0F0F0F'] : ['#FFFFFF', '#F5F5F5']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.headerGradient}
         >
           <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
             <Text style={[styles.backText, { color: theme.text }]}>← Back</Text>
           </TouchableOpacity>
-        </LinearGradient>
+        </ExpoLinearGradient>
 
+        <ScrollView contentContainerStyle={{padding:16, flexGrow: 1}}>
         <View style={styles.inputGroup}>
           <Text style={[styles.label, { color: theme.subtext }]}>Full Name</Text>
           <TextInput
@@ -209,6 +210,10 @@ export default function ProfileEditScreen() {
           </View>
         )}
 
+        <View style={[styles.warningCard, { backgroundColor: theme.cardBg, borderColor: theme.cardBorder }]}>
+          <Text style={styles.warningNotice}>⚠️ WARNING: Please do not share your credentials with anyone because we are not responsible for any financial loss or unauthorized access resulting from compromised credentials.</Text>
+        </View>
+
         <TouchableOpacity style={[styles.saveButton, saving && styles.saveButtonDisabled]} onPress={handleSave} disabled={saving || !user}>
           {saving ? <ActivityIndicator size="small" color="#FFFFFF" /> : <Text style={styles.saveButtonText}>Save Changes</Text>}
         </TouchableOpacity>
@@ -216,7 +221,8 @@ export default function ProfileEditScreen() {
         <TouchableOpacity style={styles.cancelButton} onPress={() => router.back()}>
           <Text style={styles.cancelButtonText}>Cancel</Text>
         </TouchableOpacity>
-      </ScrollView>
+        </ScrollView>
+      </View>
     </KeyboardAvoidingView>
 
     <ThemeModal
@@ -233,17 +239,9 @@ export default function ProfileEditScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   headerGradient: {
-    paddingTop: 50,
-    paddingBottom: 20,
+    paddingTop: 40,
+    paddingBottom: 25,
     paddingHorizontal: 20,
-    marginHorizontal: -16,
-    marginTop: -16,
-    marginBottom: 20,
-    borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 30,
-    shadowOffset: { width: 0, height: 4 },
-    shadowRadius: 10,
-    elevation: 6,
   },
   backButton: {
     alignSelf: 'flex-start',
@@ -256,6 +254,10 @@ const styles = StyleSheet.create({
   title: { fontSize: 22, fontWeight: '800', marginTop: 10 },
   subtitle: { fontSize: 12, marginBottom: 20, marginTop: 10 },
   inputGroup: { marginBottom: 16 },
+  warningCard: { padding: 16, borderRadius: 12, borderWidth: 1, marginTop: 50, marginBottom: 40, shadowColor: '#000', shadowOpacity: 0.08, shadowOffset: { width: 0, height: 2 }, shadowRadius: 4, elevation: 2 },
+  warningNotice: { fontSize: 16, lineHeight: 22, marginBottom: 0, color: '#ED1C24', fontWeight: '600' },
+  privacyCard: { padding: 16, borderRadius: 12, borderWidth: 1, marginBottom: 20, shadowColor: '#000', shadowOpacity: 0.08, shadowOffset: { width: 0, height: 2 }, shadowRadius: 4, elevation: 2 },
+  privacyNotice: { fontSize: 14, lineHeight: 20, marginBottom: 0, marginTop: 0 },
   label: { fontSize: 12, marginBottom: 6, fontWeight: '600' },
   input: { padding: 14, borderRadius: 12, borderWidth: 1, fontSize: 14 },
   textarea: { padding: 14, borderRadius: 12, borderWidth: 1, fontSize: 14, minHeight: 120, textAlignVertical: 'top' },
@@ -266,7 +268,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14, 
     borderRadius: 12, 
     alignItems: 'center', 
-    marginTop: 10,
+    marginTop: 'auto',
     shadowColor: '#ED1C24',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
