@@ -32,7 +32,7 @@ public class ProfileHandler implements HttpHandler {
 
             int id = Integer.parseInt(idStr);
             try (Connection conn = db.getConnection()) {
-                String sql = "SELECT Id, FullName, Email, Username" + (type.equals("barber") ? ", Bio" : "") + " FROM " + type + " WHERE Id = ?";
+                String sql = "SELECT Id, FullName, Email, Username" + (type.equals("barber") ? ", Bio, ImageUrl" : "") + " FROM " + type + " WHERE Id = ?";
                 PreparedStatement pstmt = conn.prepareStatement(sql);
                 pstmt.setInt(1, id);
 
@@ -44,7 +44,9 @@ public class ProfileHandler implements HttpHandler {
                         rs.getInt("Id"), rs.getString("FullName"), rs.getString("Email"), rs.getString("Username"), type));
                     if (type.equals("barber")) {
                         String bio = rs.getString("Bio");
+                        String imageUrl = rs.getString("ImageUrl");
                         response.append(String.format(", \"bio\": \"%s\"", bio != null ? bio : ""));
+                        response.append(String.format(", \"profileImage\": \"%s\"", imageUrl != null ? imageUrl : ""));
                     }
                     response.append("}");
                     sendResponse(exchange, 200, response.toString());
@@ -67,6 +69,7 @@ public class ProfileHandler implements HttpHandler {
             String email = getValue(body, "email");
             String password = getValue(body, "password");
             String bio = getValue(body, "bio"); // barber only
+            String profileImage = getValue(body, "profileImage"); // barber only
 
             if (idStr.isEmpty() || type.isEmpty()) {
                 sendResponse(exchange, 400, "{\"error\": \"Missing id or type\"}");
@@ -81,7 +84,8 @@ public class ProfileHandler implements HttpHandler {
                 if (!fullName.isEmpty()) { sql.append("FullName = ?"); first = false; }
                 if (!email.isEmpty()) { sql.append(first ? "Email = ?" : ", Email = ?"); first = false; }
                 if (!password.isEmpty() && !password.equals("undefined")) { sql.append(first ? "Password = ?" : ", Password = ?"); first = false; }
-                if (type.equals("barber") && !bio.isEmpty()) { sql.append(first ? "Bio = ?" : ", Bio = ?"); }
+                if (type.equals("barber") && !bio.isEmpty()) { sql.append(first ? "Bio = ?" : ", Bio = ?"); first = false; }
+                if (type.equals("barber") && !profileImage.isEmpty()) { sql.append(first ? "ImageUrl = ?" : ", ImageUrl = ?"); }
                 sql.append(" WHERE Id = ?");
 
                 // If nothing to update
@@ -96,6 +100,7 @@ public class ProfileHandler implements HttpHandler {
                 if (!email.isEmpty()) { pstmt.setString(idx++, email); }
                 if (!password.isEmpty() && !password.equals("undefined")) { pstmt.setString(idx++, password); }
                 if (type.equals("barber") && !bio.isEmpty()) { pstmt.setString(idx++, bio); }
+                if (type.equals("barber") && !profileImage.isEmpty()) { pstmt.setString(idx++, profileImage); }
                 pstmt.setInt(idx, id);
 
                 int updated = pstmt.executeUpdate();

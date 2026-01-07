@@ -32,10 +32,24 @@ public class LoginHandler implements HttpHandler {
 
                 if (rs.next()) {
                     // Return user info if match found
-                    String response = String.format(
-                        "{\"id\": %d, \"name\": \"%s\", \"type\": \"%s\"}",
-                        rs.getInt("Id"), rs.getString("FullName"), type
-                    );
+                    String imageUrl = "";
+                    if (type.equals("barber")) {
+                        imageUrl = rs.getString("ImageUrl");
+                        if (imageUrl == null) imageUrl = "";
+                    }
+                    
+                    String response;
+                    if (type.equals("barber") && !imageUrl.isEmpty()) {
+                        response = String.format(
+                            "{\"id\": %d, \"name\": \"%s\", \"type\": \"%s\", \"profileImage\": \"%s\"}",
+                            rs.getInt("Id"), rs.getString("FullName"), type, imageUrl
+                        );
+                    } else {
+                        response = String.format(
+                            "{\"id\": %d, \"name\": \"%s\", \"type\": \"%s\"}",
+                            rs.getInt("Id"), rs.getString("FullName"), type
+                        );
+                    }
                     sendResponse(exchange, 200, response);
                 } else {
                     sendResponse(exchange, 401, "{\"error\": \"Invalid credentials\"}");

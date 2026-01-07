@@ -216,11 +216,7 @@ export default function BookingScreen() {
 
       {/* Services Selection */}
       <View style={[styles.section, { marginTop: 20 }]}>
-        <View style={[styles.sectionTitleCard, { 
-          backgroundColor: theme.cardBg,
-          shadowColor: '#ED1C24',
-          shadowOpacity: isDark ? 0.5 : 0.2,
-        }]}>
+        <View style={[styles.sectionTitleCard, { backgroundColor: theme.cardBg, borderColor: theme.cardBorder }]}>
           <Text style={[styles.sectionTitle, { color: theme.text }]}>Select Service</Text>
         </View>
         <View style={styles.optionsContainer}>
@@ -284,11 +280,7 @@ export default function BookingScreen() {
 
       {/* Barber Selection */}
       <View style={styles.section}>
-        <View style={[styles.sectionTitleCard, { 
-          backgroundColor: theme.cardBg,
-          shadowColor: '#00A651',
-          shadowOpacity: isDark ? 0.5 : 0.2,
-        }]}>
+        <View style={[styles.sectionTitleCard, { backgroundColor: theme.cardBg, borderColor: theme.cardBorder }]}>
           <Text style={[styles.sectionTitle, { color: theme.text }]}>Select Barber</Text>
         </View>
         <View style={styles.optionsContainer}>
@@ -325,11 +317,7 @@ export default function BookingScreen() {
 
       {/* Date Selection */}
       <View style={styles.section}>
-        <View style={[styles.sectionTitleCard, { 
-          backgroundColor: theme.cardBg,
-          shadowColor: '#FF9500',
-          shadowOpacity: isDark ? 0.5 : 0.2,
-        }]}>
+        <View style={[styles.sectionTitleCard, { backgroundColor: theme.cardBg, borderColor: theme.cardBorder }]}>
           <Text style={[styles.sectionTitle, { color: theme.text }]}>Select Date</Text>
         </View>
         <ScrollView 
@@ -377,11 +365,7 @@ export default function BookingScreen() {
 
       {/* Time Selection */}
       <View style={styles.section}>
-        <View style={[styles.sectionTitleCard, { 
-          backgroundColor: theme.cardBg,
-          shadowColor: '#00A651',
-          shadowOpacity: isDark ? 0.5 : 0.2,
-        }]}>
+        <View style={[styles.sectionTitleCard, { backgroundColor: theme.cardBg, borderColor: theme.cardBorder }]}>
           <Text style={[styles.sectionTitle, { color: theme.text }]}>Select Time</Text>
         </View>
         {loadingAvailability && <ActivityIndicator size="small" color="#ED1C24" style={{ marginBottom: 8 }} />}
@@ -452,11 +436,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   headerGradient: {
-    paddingTop: 50,
-    paddingBottom: 30,
+    paddingTop: 40,
+    paddingBottom: 20,
     paddingHorizontal: 20,
-    borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 30,
     shadowColor: '#000',
     shadowOpacity: 0.1,
     shadowRadius: 12,
@@ -487,9 +469,12 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     width: '90%',
     alignItems: 'center',
-    shadowOffset: { width: 0, height: 4 },
-    shadowRadius: 10,
-    elevation: 6,
+    borderWidth: 1,
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 3,
   },
   sectionTitle: {
     fontSize: 18,
@@ -516,8 +501,6 @@ const styles = StyleSheet.create({
   optionButtonActive: {
     backgroundColor: '#ED1C24',
     borderColor: '#ED1C24',
-    shadowColor: '#ED1C24',
-    shadowOpacity: 0.3,
   },
   serviceImage: {
     width: 60,
@@ -580,8 +563,6 @@ const styles = StyleSheet.create({
   dateButtonActive: {
     backgroundColor: '#ED1C24',
     borderColor: '#ED1C24',
-    shadowColor: '#ED1C24',
-    shadowOpacity: 0.3,
   },
   dateDay: {
     fontSize: 12,
@@ -621,8 +602,6 @@ const styles = StyleSheet.create({
   timeButtonActive: {
     backgroundColor: '#ED1C24',
     borderColor: '#ED1C24',
-    shadowColor: '#ED1C24',
-    shadowOpacity: 0.25,
   },
   timeText: {
     fontWeight: '600',
@@ -634,11 +613,11 @@ const styles = StyleSheet.create({
   confirmButton: {
     marginHorizontal: 20,
     borderRadius: 16,
-    shadowColor: '#ED1C24',
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 8,
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 5,
     marginTop: 24,
   },
   confirmButtonInner: {
