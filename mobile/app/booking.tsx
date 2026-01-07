@@ -8,6 +8,19 @@ import { getBarbers, getServices, getAvailableTimes } from '../api';
 import ThemeModal from '../components/ThemeModal';
 import { useThemeAlert } from '../hooks/useThemeAlert';
 
+const barberImages: Record<string, any> = {
+  'alex.jpg': require('../assets/images/alex.jpg'),
+  'mike.jpg': require('../assets/images/mike.jpg'),
+  'steve.jpg': require('../assets/images/steve.jpg'),
+};
+
+const getBarberImage = (profileImage: string | undefined) => {
+  if (!profileImage || !barberImages[profileImage]) {
+    return barberImages['alex.jpg']; // default fallback
+  }
+  return barberImages[profileImage];
+};
+
 interface Service {
   id: number;
   name: string;
@@ -290,18 +303,18 @@ export default function BookingScreen() {
               key={barber.id}
               style={[
                 styles.optionButton,
-                { backgroundColor: selectedBarber === barber.id ? '#00A651' : theme.cardBg, borderColor: theme.cardBorder }
+                { backgroundColor: selectedBarber === barber.id ? '#ED1C24' : theme.cardBg, borderColor: theme.cardBorder }
               ]}
               onPress={() => setSelectedBarber(barber.id)}
             >
               {barber.imageUrl ? (
                 <Image
-                  source={{ uri: barber.imageUrl }}
+                  source={getBarberImage(barber.imageUrl)}
                   style={styles.barberImage}
                   resizeMode="cover"
                 />
               ) : (
-                <View style={[styles.barberPlaceholder, { backgroundColor: selectedBarber === barber.id ? '#008A43' : '#00A651' }]}>
+                <View style={[styles.barberPlaceholder, { backgroundColor: selectedBarber === barber.id ? '#C41018' : '#00A651' }]}>
                   <Text style={styles.barberPlaceholderText}>{barber.name.charAt(0)}</Text>
                 </View>
               )}
