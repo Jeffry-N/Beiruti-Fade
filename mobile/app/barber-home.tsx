@@ -42,6 +42,7 @@ export default function BarberHomeScreen() {
   const [activeAppointments, setActiveAppointments] = useState<Appointment[]>([]);
   const [completedAppointments, setCompletedAppointments] = useState<Appointment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [menuOpen, setMenuOpen] = useState(false);
   const { visible, config, hide, alert } = useThemeAlert();
 
   const loadAppointments = async () => {
@@ -130,11 +131,6 @@ export default function BarberHomeScreen() {
       loadAppointments();
     }, [])
   );
-
-  const handleLogout = async () => {
-    await AsyncStorage.removeItem('user');
-    router.replace('/' as any);
-  };
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr + 'T00:00:00');
@@ -232,47 +228,61 @@ export default function BarberHomeScreen() {
         style={styles.headerGradient}
       >
         <View style={styles.headerContent}>
-          <View style={styles.headerLeft}>
-            <Text style={[styles.greeting, { color: isDark ? '#FFFFFF' : '#1A1A1A' }]}>Welcome back</Text>
-            <Text style={[styles.userName, { color: isDark ? '#FFFFFF' : '#1A1A1A' }]}>{user?.name || 'Barber'}</Text>
+          {/* Left: Logo + Brand Name */}
+          <View style={styles.headerLeftLogo}>
+            <Image 
+              source={require('../assets/images/beiruti-logo.png')} 
+              style={styles.headerLogo}
+              resizeMode="contain"
+            />
+            <Text style={[styles.headerBrand, { color: isDark ? '#FFFFFF' : '#1A1A1A' }]}>Beiruti Fade</Text>
           </View>
-          <Image 
-            source={require('../assets/images/beiruti-logo.png')} 
-            style={styles.headerLogo}
-            resizeMode="contain"
-          />
+
+          {/* Right: User Avatar (Clickable) */}
+          <View style={{ position: 'relative' }}>
+            <TouchableOpacity 
+              style={styles.userAvatarButton}
+              onPress={() => setMenuOpen(!menuOpen)}
+              activeOpacity={0.7}
+            >
+              <Image 
+                source={{ uri: 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&size=55' }}
+                style={styles.userAvatar}
+              />
+            </TouchableOpacity>
+
+            {/* Dropdown Menu */}
+            {menuOpen && (
+              <View style={[styles.menuDropdown, { backgroundColor: isDark ? '#0F0F0F' : '#FFFFFF', borderColor: theme.cardBorder }]} pointerEvents="auto">
+                <TouchableOpacity 
+                  style={styles.menuItem}
+                  onPress={() => {
+                    setMenuOpen(false);
+                    router.push('/profile-edit');
+                  }}
+                >
+                  <Text style={[styles.menuItemText, { color: theme.text }]}>Edit Profile</Text>
+                </TouchableOpacity>
+                <View style={[styles.menuDivider, { backgroundColor: theme.cardBorder }]} />
+                <TouchableOpacity 
+                  style={styles.menuItem}
+                  onPress={async () => {
+                    setMenuOpen(false);
+                    await AsyncStorage.removeItem('user');
+                    router.replace('/');
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <Text style={[styles.menuItemText, { color: '#ED1C24' }]}>Logout</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
         </View>
       </LinearGradient>
 
-      {/* Quick Actions Card */}
-      <View style={styles.quickActionsWrapper}>
-        <View style={styles.quickActionsRow}>
-          <TouchableOpacity 
-            style={[styles.quickActionCard, {
-              backgroundColor: theme.cardBg,
-              shadowColor: '#00A651',
-              shadowOpacity: isDark ? 0.5 : 0.2,
-            }]}
-            onPress={() => router.push('/profile-edit')}
-          >
-            <Text style={[styles.quickActionTitle, { color: theme.text }]}>Edit Profile</Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity 
-            style={[styles.quickActionCard, {
-              backgroundColor: theme.cardBg,
-              shadowColor: '#ED1C24',
-              shadowOpacity: isDark ? 0.5 : 0.2,
-            }]}
-            onPress={handleLogout}
-          >
-            <Text style={[styles.quickActionTitle, { color: theme.text }]}>Logout</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-
       {/* Modern Stats Cards */}
-      <View style={styles.statsContainer}>
+      <View style={[styles.statsContainer, { marginTop: 20 }]}>
         <View style={[styles.statCard, {
           backgroundColor: theme.cardBg,
           shadowColor: '#FF9500',
@@ -450,23 +460,62 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   headerGradient: {
-    paddingTop: 50,
-    paddingBottom: 30,
+    paddingTop: 40,
+    paddingBottom: 25,
     paddingHorizontal: 20,
-    borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 30,
   },
   headerContent: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  headerLeft: {
-    flex: 1,
+  headerLeftLogo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
   },
   headerLogo: {
     width: 60,
     height: 60,
+  },
+  headerBrand: {
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  userAvatarButton: {
+    borderRadius: 27.5,
+    overflow: 'hidden',
+  },
+  userAvatar: {
+    width: 55,
+    height: 55,
+    borderRadius: 27.5,
+  },
+  menuDropdown: {
+    position: 'absolute',
+    top: 60,
+    right: 0,
+    borderRadius: 12,
+    borderWidth: 1,
+    overflow: 'hidden',
+    minWidth: 150,
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 5,
+    zIndex: 1000,
+  },
+  menuItem: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+  },
+  menuItemText: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  menuDivider: {
+    height: 1,
   },
   header: {
     flexDirection: 'row',
@@ -476,50 +525,14 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   greeting: {
-    fontSize: 16,
-    opacity: 0.9,
+    fontSize: 14,
+    opacity: 0.8,
     fontWeight: '500',
   },
   userName: {
-    fontSize: 28,
+    fontSize: 18,
     fontWeight: 'bold',
     marginTop: 4,
-  },
-  editLink: {
-    color: '#00A651',
-    fontSize: 12,
-    fontWeight: '600',
-    marginTop: 4,
-  },
-  quickActionsWrapper: {
-    padding: 20,
-    gap: 12,
-  },
-  quickActionsRow: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  quickActionCard: {
-    flex: 1,
-    padding: 24,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowOpacity: 0.15,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 6,
-  },
-  quickActionTitle: {
-    fontSize: 15,
-    fontWeight: 'bold',
-  },
-  menuButton: {
-    padding: 8,
-  },
-  menuDots: {
-    color: '#1A1A1A',
-    fontSize: 20,
   },
   statsContainer: {
     flexDirection: 'row',

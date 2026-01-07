@@ -165,19 +165,28 @@ export default function HomeScreen() {
           style={styles.headerGradient}
         >
           <View style={styles.headerContent}>
-            <View style={styles.headerLeft}>
-              <Text style={[styles.greetingModern, { color: isDark ? '#FFFFFF' : '#1A1A1A' }]}>Welcome back</Text>
-              <Text style={[styles.userNameModern, { color: isDark ? '#FFFFFF' : '#1A1A1A' }]}>{user?.name || 'Guest'}</Text>
+            <View style={styles.headerLeftLogo}>
+              <Image
+                source={require('../assets/images/beiruti-logo.png')}
+                style={styles.headerLogo}
+              />
+              <Text style={[styles.headerBrand, { color: isDark ? '#FFFFFF' : '#1A1A1A' }]}>Beiruti Fade</Text>
             </View>
-            <Image
-              source={require('../assets/images/beiruti-logo.png')}
-              style={styles.headerLogo}
-            />
             <Pressable
               onPress={() => setMenuOpen(!menuOpen)}
-              style={[styles.menuButton, { backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)' }]}
+              style={styles.userAvatarButton}
             >
-              <Text style={[styles.menuDots, { color: isDark ? '#FFFFFF' : '#1A1A1A' }]}>⋯</Text>
+              {user?.profileImage ? (
+                <Image
+                  source={{ uri: user.profileImage }}
+                  style={styles.userAvatar}
+                />
+              ) : (
+                <Image
+                  source={{ uri: 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&size=55' }}
+                  style={styles.userAvatar}
+                />
+              )}
             </Pressable>
           </View>
         </ExpoLinearGradient>
@@ -185,14 +194,14 @@ export default function HomeScreen() {
         {menuOpen && (
           <>
             <Pressable style={styles.menuOverlay} onPress={() => setMenuOpen(false)} />
-            <View style={[styles.menuDropdown, { backgroundColor: theme.cardBg, borderColor: theme.cardBorder }]}>
+            <View style={[styles.menuDropdown, { backgroundColor: isDark ? '#0F0F0F' : '#FFFFFF', borderColor: theme.cardBorder, opacity: 1 }]} pointerEvents="auto">
               <TouchableOpacity style={styles.menuItem} onPress={() => { setMenuOpen(false); router.push('/profile-edit' as any); }}>
-                <Text style={[styles.menuItemText, { color: theme.text }]}>Profile</Text>
+                <Text style={[styles.menuItemText, { color: isDark ? '#FFFFFF' : theme.text }]}>Edit Profile</Text>
               </TouchableOpacity>
-              <View style={[styles.menuDivider, { backgroundColor: theme.cardBorder }]} />
+              <View style={[styles.menuDivider, { backgroundColor: isDark ? '#2A2A2A' : theme.cardBorder }]} />
               <TouchableOpacity
                 style={styles.menuItem}
-                onPress={async () => { setMenuOpen(false); await AsyncStorage.removeItem('user'); router.replace('/index' as any); }}
+                onPress={async () => { await AsyncStorage.removeItem('user'); setMenuOpen(false); router.replace('/' as any); }}
               >
                 <Text style={[styles.menuItemText, { color: '#ED1C24' }]}>Logout</Text>
               </TouchableOpacity>
@@ -512,8 +521,8 @@ const styles = StyleSheet.create({
   },
   // Modern Header Styles
   headerGradient: {
-    paddingTop: 30,
-    paddingBottom: 15,
+    paddingTop: 40,
+    paddingBottom: 25,
     paddingHorizontal: 20,
     shadowColor: '#000',
     shadowOpacity: 0.1,
@@ -534,9 +543,32 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
   },
+  headerLeftLogo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    flex: 1,
+  },
   headerLogo: {
     width: 60,
     height: 60,
+  },
+  headerBrand: {
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  userAvatarButton: {
+    width: 55,
+    height: 55,
+    borderRadius: 27.5,
+    overflow: 'hidden',
+  },
+  userAvatar: {
+    width: 55,
+    height: 55,
+    borderRadius: 27.5,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   menuButton: {
     padding: 8,
@@ -557,24 +589,24 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 60,
     right: 16,
-    borderRadius: 16,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
+    borderRadius: 12,
     borderWidth: 1,
+    overflow: 'hidden',
+    minWidth: 150,
     shadowColor: '#000',
-    shadowOpacity: 0.2,
-    shadowRadius: 10,
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
     shadowOffset: { width: 0, height: 4 },
-    elevation: 8,
-    width: 180,
+    elevation: 5,
+    zIndex: 1000,
   },
   menuItem: {
-    paddingVertical: 10,
-    paddingHorizontal: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
   },
   menuItemText: {
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: '500',
   },
   menuDivider: {
     height: 1,
